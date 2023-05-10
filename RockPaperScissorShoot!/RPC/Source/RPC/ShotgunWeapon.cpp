@@ -3,6 +3,7 @@
 
 #include "ShotgunWeapon.h"
 #include "MyPlayer.h"
+#include "Enemy.h"
 #include "Engine/SkeletalMeshSocket.h"
 
 AShotgunWeapon::AShotgunWeapon()
@@ -28,7 +29,7 @@ void AShotgunWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (PlayerWeapon == EPlayerWeapon::EPW_Shotgun)
+	if ((PlayerWeapon == EPlayerWeapon::EPW_Shotgun) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
 	{
 		if (bToggleLog)
 		{
@@ -44,6 +45,16 @@ void AShotgunWeapon::Tick(float DeltaTime)
 			bTestEquip = false;
 		}
 		
+	}
+	else if (!(PlayerWeapon == EPlayerWeapon::EPW_Shotgun) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
+	{
+		if (bTestEquip)
+		{
+			SetupWeapon();
+			bTestEquip = false;
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("YAAAAAAAAAA"));
+		}
 	}
 }
 
@@ -62,5 +73,14 @@ void AShotgunWeapon::SetupWeapon()
 			LeftHandSocket->AttachActor(this, MyPlayer->GetMesh());
 		}
 	}
-	
+	else
+	{
+		const USkeletalMeshSocket* LeftHandSocket = Enemy->GetMesh()->GetSocketByName("LeftHandSocket");
+		if (LeftHandSocket)
+		{
+			LeftHandSocket->AttachActor(this, Enemy->GetMesh());
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("YOOOOOOOOOOOOOO"));
+		}
+	}
 }

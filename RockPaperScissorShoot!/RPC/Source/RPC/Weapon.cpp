@@ -4,6 +4,7 @@
 #include "Weapon.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/ArrowComponent.h"
 #include "MyPlayer.h"
 #include "Enemy.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,6 +20,9 @@ AWeapon::AWeapon()
 
 	WeaponCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("WeaponCollision"));
 	WeaponCollision->SetupAttachment(SkeletalMesh);
+
+	BulletSpawnTransform = CreateDefaultSubobject<UArrowComponent>(TEXT("BulletSpawnTransform"));
+	BulletSpawnTransform->SetupAttachment(SkeletalMesh);
 
 	bMyTest = true;
 	PlayerWeapon = EPlayerWeapon::EPW_NONE;
@@ -42,10 +46,14 @@ void AWeapon::Tick(float DeltaTime)
 	
 	if (MyPlayer)
 	{
-		if (MyPlayer->PlayerResult == EPlayerResult::EPR_Loser)
+		if (MyPlayer->PlayerResult == EPlayerResult::EPR_Winner)
 		{
 			PlayerWeapon = EPlayerWeapon::EPW_Shotgun;
 			
+		}
+		else if (MyPlayer->PlayerResult == EPlayerResult::EPR_Loser)
+		{
+			PlayerWeapon = EPlayerWeapon::EPW_Rifle;
 		}
 	}
 }

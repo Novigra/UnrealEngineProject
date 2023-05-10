@@ -76,8 +76,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interpolation)
 	class AEnemyPlacement* EnemyPlacement;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	class ARifleWeapon* RifleWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	class AShotgunWeapon* ShotgunWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	class AWeapon* EquippedWeapon;
+
 	bool bTie;
 	bool bCanChooseWinner;
+	bool bToggleEquip;
 
 protected:
 	// Called when the game starts or when spawned
@@ -95,10 +105,14 @@ public:
 	void NextRound();
 	void ChooseWinner();
 	void SwitchModes();
+	void LoadActors();
 
 	UFUNCTION()
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	FORCEINLINE void SetEnemyWeapon(AWeapon* MyWeapon) { EquippedWeapon = MyWeapon; }
+	FORCEINLINE AWeapon* GetEnemyWeapon() { return EquippedWeapon; }
 };

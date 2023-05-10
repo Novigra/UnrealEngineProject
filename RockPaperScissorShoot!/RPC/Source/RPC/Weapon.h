@@ -27,6 +27,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = SkeletalMesh)
 	class USkeletalMeshComponent* SkeletalMesh;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Arrow)
+	class UArrowComponent* BulletSpawnTransform;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player)
 	class AMyPlayer* MyPlayer;
 

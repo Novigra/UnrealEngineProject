@@ -29,4 +29,20 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	int32 Mag;
+
+	bool bToggleLog;
+	bool bTestEquip;
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	void SetupWeapon();
+
+	FORCEINLINE void SetWeapon(ARifleWeapon* MyWeapon) { Weapon = MyWeapon; }
+	FORCEINLINE ARifleWeapon* GetWeapon() { return Weapon; }
 };

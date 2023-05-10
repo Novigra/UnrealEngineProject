@@ -6,6 +6,8 @@
 #include "MyPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnemyPlacement.h"
+#include "RifleWeapon.h"
+#include "ShotgunWeapon.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -25,6 +27,7 @@ AEnemy::AEnemy()
 	RoundEnemyWins = 0;
 	InterpSpeed = 800.0f;
 	bEnemyPushBack = false;
+	bToggleEquip = true;
 }
 
 // Called when the game starts or when spawned
@@ -36,6 +39,8 @@ void AEnemy::BeginPlay()
 
 	EnemyCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBegin);
 	EnemyCollision->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEnd);
+
+	LoadActors();
 }
 
 // Called every frame
@@ -71,6 +76,31 @@ void AEnemy::Tick(float DeltaTime)
 			}
 			bCanChooseWinner = false;
 		}
+
+		if (EnemyStatus == EEnemyStatus::EES_Fight)
+		{
+			if (ShotgunWeapon)
+			{
+				if ((MyPlayer->GetEquippedWeapon() == ShotgunWeapon) && bToggleEquip)
+				{
+					SetEnemyWeapon(RifleWeapon);
+					bToggleEquip = false;
+					if (GEngine)
+						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has rifle"));
+				}
+			}
+
+			if (RifleWeapon)
+			{
+				if ((MyPlayer->GetEquippedWeapon() == RifleWeapon) && bToggleEquip)
+				{
+					SetEnemyWeapon(ShotgunWeapon);
+					bToggleEquip = false;
+					if (GEngine)
+						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has shotgun"));
+				}
+			}
+		}
 	}
 
 	if (EnemyPlacement)
@@ -83,6 +113,8 @@ void AEnemy::Tick(float DeltaTime)
 			SetActorLocation(InterpLocation);
 		}
 	}
+
+	
 }
 
 // Called to bind functionality to input
@@ -198,6 +230,7 @@ void AEnemy::NextRound()
 	MyPlayer->MatchTimer = 1;
 	MyPlayer->bCanplayerchoose = true;
 	MyPlayer->bStopTimer = false;
+	MyPlayer->PlayerChoice = EPlayerChoice::EPC_NONE;
 	if (!(bTie))
 	{
 		MyPlayer->MatchRound++;
@@ -232,4 +265,13 @@ void AEnemy::SwitchModes()
 
 	MyPlayer->bPushBack = true;
 	bEnemyPushBack = true;
+}
+
+void AEnemy::LoadActors()
+{
+	AActor* FoundWeapon = UGameplayStatics::GetActorOfClass(this, ARifleWeapon::StaticClass());
+	RifleWeapon = Cast<ARifleWeapon>(FoundWeapon);
+
+	FoundWeapon = UGameplayStatics::GetActorOfClass(this, AShotgunWeapon::StaticClass());
+	ShotgunWeapon = Cast<AShotgunWeapon>(FoundWeapon);
 }

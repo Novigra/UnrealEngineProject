@@ -48,6 +48,7 @@ AMyPlayer::AMyPlayer()
 	PlayerStatus = EPlayerStatus::EPS_Match;
 	PlayerChoice = EPlayerChoice::EPC_NONE;
 	PlayerResult = EPlayerResult::EPR_NONE;
+	PlayerAnimTrans = EPlayerAnimTrans::EPAT_NONE;
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Player Initial Status Is Match"));
 
@@ -91,7 +92,7 @@ void AMyPlayer::Tick(float DeltaTime)
 		bCanplayerchoose = false;
 		bStopTimer = true;
 
-		if (PlayerChoice == EPlayerChoice::EPC_NONE && bToggleLog)
+		/*if (PlayerChoice == EPlayerChoice::EPC_NONE && bToggleLog)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("PLAYER CHOSE : NONE"));
 			bToggleLog = false;
@@ -100,7 +101,7 @@ void AMyPlayer::Tick(float DeltaTime)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("PLAYER CHOSE : (Action)"));
 			bToggleLog = false;
-		}
+		}*/
 
 	}
 
@@ -124,6 +125,15 @@ void AMyPlayer::Tick(float DeltaTime)
 			if (ShotgunWeapon->Weapon && bToggleEquip)
 			{
 				SetEquippedWeapon(ShotgunWeapon);
+				bToggleEquip = false;
+			}
+		}
+
+		if (RifleWeapon)
+		{
+			if (RifleWeapon->Weapon && bToggleEquip)
+			{
+				SetEquippedWeapon(RifleWeapon);
 				bToggleEquip = false;
 			}
 		}
@@ -158,6 +168,10 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("TestInput", IE_Pressed, this, &AMyPlayer::ChangeStatus);
 	PlayerInputComponent->BindAction("RestartTimer", IE_Pressed, this, &AMyPlayer::RestartTime);
 	PlayerInputComponent->BindAction("Random", IE_Pressed, this, &AMyPlayer::RandomNumber);
+
+	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AMyPlayer::Shoot);
+	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMyPlayer::Aim_Pressed);
+	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMyPlayer::Aim_Released);
 }
 
 // Forward / BackWard Movement
@@ -266,6 +280,21 @@ void AMyPlayer::PlayerScissors()
 
 		bCanplayerchoose = false;
 	}
+}
+
+void AMyPlayer::Shoot()
+{
+
+}
+
+void AMyPlayer::Aim_Pressed()
+{
+
+}
+
+void AMyPlayer::Aim_Released()
+{
+
 }
 
 void AMyPlayer::LoadActors()

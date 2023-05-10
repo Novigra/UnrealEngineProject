@@ -35,6 +35,15 @@ enum class EPlayerResult : uint8
 	EPR_NONE	UMETA(DisplayName = "NONE")
 };
 
+UENUM(BlueprintType)
+enum class EPlayerAnimTrans : uint8
+{
+	EPAT_Choosing	UMETA(DisplayName = "Choosing"),
+	EPAT_Playing	UMETA(DisplayName = "Playing"),
+
+	EPAT_NONE	UMETA(DisplayName = "NONE")
+};
+
 UCLASS()
 class RPC_API AMyPlayer : public ACharacter
 {
@@ -52,6 +61,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Enums)
 	EPlayerResult PlayerResult;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Enums)
+	EPlayerAnimTrans PlayerAnimTrans;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;
@@ -137,6 +149,10 @@ public:
 	void PlayerRock();
 	void PlayerPaper();
 	void PlayerScissors();
+
+	void Shoot();
+	void Aim_Pressed();
+	void Aim_Released();
 
 	void LoadActors();
 
