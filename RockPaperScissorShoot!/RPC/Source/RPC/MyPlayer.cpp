@@ -2,6 +2,7 @@
 
 
 #include "MyPlayer.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -31,18 +32,18 @@ AMyPlayer::AMyPlayer()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
-	InitialCamera = Camera->GetRelativeLocation();
+	InitialCamera = GetMesh()->GetRelativeLocation();
+	//RpsCamera = InitialCamera;
+
+	StaticRootMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	StaticRootMesh->SetupAttachment(GetRootComponent());
 
 	// Attach Mesh to Camera Boom so it follows the camera Movement
-	GetMesh()->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	InitialMesh = GetMesh()->GetRelativeLocation();
+	GetMesh()->SetupAttachment(Camera);
+	RpsMeshLocation = InitialMeshLocation;
 
 	// Set Capsule Size
 	GetCapsuleComponent()->InitCapsuleSize(40.0f, 40.0f);
-
-	// Character Movement
-	SpeedNormal = 0.0f;			// Set Speed Value (In Normal State)
-	SpeedFast = 0.0f;			// Set Speed Value (In Sprint State)
 
 	// Player initial status
 	PlayerStatus = EPlayerStatus::EPS_Match;
@@ -65,13 +66,43 @@ AMyPlayer::AMyPlayer()
 
 	bToggleLog = true;
 	bToggleEquip = true;
+	bToggleMeshLoc = true;
+
+	// Character Properties
+	MaxHealth = 100.0f;
+	Health = 100.0f;
+
+	CurrentSpeed = 0.0f;
+
+	WinnerSpeed = 800.0f;
+	LoserSpeed = 400.0f;
+	DashSpeed = 1000.0f;
+
+	DashTime = 0.5f;
+	DashRemainingTime = 0.0f;
+	DashTimeRate = 1.0f;
+
+	bCanDash = false;
+	bSpeedSwitch = true;
+	bDashSwitch = false;
+	bCanPlayerShoot = false;
+
+	Zoom = Camera->FieldOfView;
+	InitialZoom = Zoom;
+	ZoomRate = 1.0f;
+	bTriggerZooming = false;
+	bTriggerZoomingOut = false;
+
+	bIsPressed = false;
 }
 
 // Called when the game starts or when spawned
 void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	InitialMeshLocation = GetMesh()->GetRelativeLocation();
+
 	LoadActors();
 }
 
@@ -79,12 +110,39 @@ void AMyPlayer::BeginPlay()
 void AMyPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bTriggerZooming)
+	{
+		Zoom -= (ZoomRate * DeltaTime);
+		Camera->FieldOfView = Zoom;
+		UE_LOG(LogTemp, Warning, TEXT("Zoom = %f"), Zoom);
+
+		if (Zoom <= ZoomedValue)
+		{
+			bTriggerZooming = false;
+		}
+	}
+
+	if (bTriggerZoomingOut)
+	{
+		Zoom += (ZoomRate * DeltaTime);
+		Camera->FieldOfView = Zoom;
+		UE_LOG(LogTemp, Warning, TEXT("Zoom = %f"), Zoom);
+
+		if (Zoom >= InitialZoom)
+		{
+			bTriggerZoomingOut = false;
+		}
+	}
+
+	// Modify Mesh in runtime
+	MeshModification();
 	
 	// Match Timer
 	if (!(bStopTimer))
 	{
 		MatchTimer += (MatchTimerRate * DeltaTime);
-		UE_LOG(LogTemp, Warning, TEXT("Match Timer = %f"), MatchTimer);
+		//UE_LOG(LogTemp, Warning, TEXT("Match Timer = %f"), MatchTimer);
 	}
 	
 	if (MatchTimer > 6)
@@ -92,17 +150,7 @@ void AMyPlayer::Tick(float DeltaTime)
 		bCanplayerchoose = false;
 		bStopTimer = true;
 
-		/*if (PlayerChoice == EPlayerChoice::EPC_NONE && bToggleLog)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("PLAYER CHOSE : NONE"));
-			bToggleLog = false;
-		}
-		else if (!(PlayerChoice == EPlayerChoice::EPC_NONE) && (bToggleLog))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("PLAYER CHOSE : (Action)"));
-			bToggleLog = false;
-		}*/
-
+		PlayerAnimTrans = EPlayerAnimTrans::EPAT_Playing;
 	}
 
 	// Push Player to the actor after the match
@@ -117,9 +165,9 @@ void AMyPlayer::Tick(float DeltaTime)
 		}
 	}
 
-	// Equip Weapon
 	if (PlayerStatus == EPlayerStatus::EPS_Fight)
 	{
+		// Equip Weapon
 		if (ShotgunWeapon)
 		{
 			if (ShotgunWeapon->Weapon && bToggleEquip)
@@ -137,9 +185,34 @@ void AMyPlayer::Tick(float DeltaTime)
 				bToggleEquip = false;
 			}
 		}
+
+		if (bSpeedSwitch)
+		{
+			SetCharacterSpeed();
+			SetCharacterDash();
+
+			bSpeedSwitch = false;
+		}
+
+		if (bCanDash)
+		{
+			if (bDashSwitch)
+			{
+				if (DashTime > DashRemainingTime)
+				{
+					GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
+					DashRemainingTime += (DashTimeRate * DeltaTime);
+				}
+				else
+				{
+					GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+					DashRemainingTime = 0.0f;
+					bDashSwitch = false;
+				}
+			}
+		}
+
 	}
-
-
 }
 
 // Called to bind functionality to input
@@ -158,8 +231,8 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMyPlayer::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMyPlayer::StopJumping);
 
-	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AMyPlayer::Sprint);
-	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AMyPlayer::StopSprinting);
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMyPlayer::DashState);
+	PlayerInputComponent->BindAction("Dash", IE_Released, this, &AMyPlayer::NormalState);
 
 	PlayerInputComponent->BindAction("PlayerRock", IE_Pressed, this, &AMyPlayer::PlayerRock);
 	PlayerInputComponent->BindAction("PlayerPaper", IE_Pressed, this, &AMyPlayer::PlayerPaper);
@@ -168,8 +241,12 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("TestInput", IE_Pressed, this, &AMyPlayer::ChangeStatus);
 	PlayerInputComponent->BindAction("RestartTimer", IE_Pressed, this, &AMyPlayer::RestartTime);
 	PlayerInputComponent->BindAction("Random", IE_Pressed, this, &AMyPlayer::RandomNumber);
+	PlayerInputComponent->BindAction("TestShooting", IE_Pressed, this, &AMyPlayer::CheckShooting);
+	PlayerInputComponent->BindAction("TestHealth", IE_Pressed, this, &AMyPlayer::CheckHealth);
 
-	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AMyPlayer::Shoot);
+	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AMyPlayer::StartShoot);
+	PlayerInputComponent->BindAction("LMB", IE_Released, this, &AMyPlayer::StopShoot);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMyPlayer::Reload);
 	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMyPlayer::Aim_Pressed);
 	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMyPlayer::Aim_Released);
 }
@@ -233,17 +310,40 @@ void AMyPlayer::StopJumping()
 	}
 }
 
-
-// Sprint State
-void AMyPlayer::Sprint()
+void AMyPlayer::SetCharacterSpeed()
 {
-	GetCharacterMovement()->MaxWalkSpeed = SpeedFast;
+	if (PlayerResult == EPlayerResult::EPR_Winner)
+	{
+		CurrentSpeed = WinnerSpeed;
+		GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+	}
+	else
+	{
+		CurrentSpeed = LoserSpeed;
+		GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+	}
 }
 
-// Normal State
-void AMyPlayer::StopSprinting()
+void AMyPlayer::SetCharacterDash()
 {
-	GetCharacterMovement()->MaxWalkSpeed = SpeedNormal;
+	if (PlayerResult == EPlayerResult::EPR_Winner)
+	{
+		bCanDash = false;
+	}
+	else
+	{
+		bCanDash = true;
+	}
+}
+
+void AMyPlayer::DashState()
+{
+	bDashSwitch = true;
+}
+
+void AMyPlayer::NormalState()
+{
+
 }
 
 void AMyPlayer::PlayerRock()
@@ -255,6 +355,7 @@ void AMyPlayer::PlayerRock()
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("PLAYER CHOSE : ROCK"));
 		
 		bCanplayerchoose = false;
+		PlayerAnimTrans = EPlayerAnimTrans::EPAT_Choosing;
 	}
 }
 
@@ -267,6 +368,7 @@ void AMyPlayer::PlayerPaper()
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("PLAYER CHOSE : PAPER"));
 
 		bCanplayerchoose = false;
+		PlayerAnimTrans = EPlayerAnimTrans::EPAT_Choosing;
 	}
 }
 
@@ -279,22 +381,70 @@ void AMyPlayer::PlayerScissors()
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("PLAYER CHOSE : SCISSORS"));
 
 		bCanplayerchoose = false;
+		PlayerAnimTrans = EPlayerAnimTrans::EPAT_Choosing;
 	}
 }
 
-void AMyPlayer::Shoot()
+void AMyPlayer::StartShoot()
 {
+	if (PlayerStatus == EPlayerStatus::EPS_Fight)
+	{
+		bIsPressed = true;
+		if (EquippedWeapon->Bullets != 0)
+		{
+			bCanPlayerShoot = true;
+		}
+	}
+}
 
+//void AMyPlayer::StartShoot()
+//{
+//	if (PlayerStatus == EPlayerStatus::EPS_Fight)
+//	{
+//		if ( (EquippedWeapon->FireTime == 0.0f))
+//		{
+//			bCanPlayerShoot = true;
+//
+//			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::Printf(TEXT("Bullets = %d"),EquippedWeapon->Bullets));
+//		}
+//		/*else
+//		{
+//			bCanPlayerShoot = false;
+//		}*/
+//	}
+//}
+
+void AMyPlayer::StopShoot()
+{
+	if (PlayerStatus == EPlayerStatus::EPS_Fight)
+	{
+		bIsPressed = false;
+		bCanPlayerShoot = false;
+		EquippedWeapon->FireTime = 0.0f;
+	}
+}
+
+void AMyPlayer::Reload()
+{
+	EquippedWeapon->Bullets = EquippedWeapon->Mag;
 }
 
 void AMyPlayer::Aim_Pressed()
 {
-
+	if (PlayerStatus == EPlayerStatus::EPS_Fight)
+	{
+		bTriggerZooming = true;
+		bTriggerZoomingOut = false;
+	}
 }
 
 void AMyPlayer::Aim_Released()
 {
-
+	if (PlayerStatus == EPlayerStatus::EPS_Fight)
+	{
+		bTriggerZooming = false;
+		bTriggerZoomingOut = true;
+	}
 }
 
 void AMyPlayer::LoadActors()
@@ -307,6 +457,25 @@ void AMyPlayer::LoadActors()
 
 	FoundWeapon = UGameplayStatics::GetActorOfClass(this, AShotgunWeapon::StaticClass());
 	ShotgunWeapon = Cast<AShotgunWeapon>(FoundWeapon);
+}
+
+void AMyPlayer::MeshModification()
+{
+	if (PlayerStatus == EPlayerStatus::EPS_Match && bToggleMeshLoc)
+	{
+		GetMesh()->SetRelativeLocation(RpsMeshLocation);
+		bToggleMeshLoc = false;
+	}
+	else if (PlayerStatus == EPlayerStatus::EPS_Fight && !(bToggleMeshLoc))
+	{
+		GetMesh()->SetRelativeLocation(InitialMeshLocation);
+		bToggleMeshLoc = true;
+	}
+}
+
+void AMyPlayer::HealthMechanics_Implementation()
+{
+	Health -= 5;
 }
 
 void AMyPlayer::ChangeStatus()
@@ -336,4 +505,23 @@ void AMyPlayer::RandomNumber()
 	int myRandomNumber = (int)FMath::FRandRange(1.0, 4.0);
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::Printf(TEXT("Random Number = %d"), myRandomNumber));
+}
+
+void AMyPlayer::CheckShooting()
+{
+	if (bCanPlayerShoot)
+	{
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Can Player Shoot Is True"));
+	}
+	else
+	{
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Can Player Shoot Is False"));
+	}
+}
+
+void AMyPlayer::CheckHealth()
+{
+	HealthMechanics();
 }

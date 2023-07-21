@@ -10,9 +10,11 @@
 ARifleWeapon::ARifleWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
 	Damage = 25;
 	Bullets = 25;
 	Mag = 25;
+	FireRate = 10;
 
 	bToggleLog = true;
 	bTestEquip = true;
@@ -22,12 +24,20 @@ void ARifleWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-
+	
 }
 
 void ARifleWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (MyPlayer)
+	{
+		/*if (Bullets < 0)
+		{
+			MyPlayer->bCanPlayerShoot = false;
+		}*/	
+	}
 
 	if ((PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
 	{

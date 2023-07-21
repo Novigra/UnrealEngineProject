@@ -21,14 +21,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	ARifleWeapon* Weapon;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	int32 Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	int32 Bullets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
-	int32 Mag;
+	int32 Mag;*/
 
 	bool bToggleLog;
 	bool bTestEquip;

@@ -45,6 +45,23 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player)
 	EPlayerWeapon PlayerWeapon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	int32 Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	int32 Bullets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	int32 Mag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	float FireRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
+	float FireTime;
+
+	FVector CurrentSpawnerLocation;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

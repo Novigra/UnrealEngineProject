@@ -9,9 +9,11 @@
 AShotgunWeapon::AShotgunWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	
 	Damage = 45;
 	Bullets = 6;
 	Mag = 6;
+	FireRate = 1;
 
 	bToggleLog = true;
 	bTestEquip = true;
@@ -28,6 +30,14 @@ void AShotgunWeapon::BeginPlay()
 void AShotgunWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (MyPlayer)
+	{
+		/*if (Bullets == 0)
+		{
+			MyPlayer->bCanPlayerShoot = false;
+		}*/
+	}
 
 	if ((PlayerWeapon == EPlayerWeapon::EPW_Shotgun) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
 	{

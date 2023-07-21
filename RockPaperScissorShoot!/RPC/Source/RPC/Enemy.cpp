@@ -3,7 +3,9 @@
 
 #include "Enemy.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "MyPlayer.h"
+#include "SpawnBullet.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnemyPlacement.h"
 #include "RifleWeapon.h"
@@ -21,6 +23,9 @@ AEnemy::AEnemy()
 	EnemyStatus = EEnemyStatus::EES_Match;
 	EnemyChoice = EEnemyChoice::EEC_NONE;
 	EnemyResult = EEnemyResult::EER_NONE;
+
+	RandomNumber = 0;
+
 	bCanEnemyChoose = false;
 	bTie = false;
 	bCanChooseWinner = true;
@@ -28,6 +33,13 @@ AEnemy::AEnemy()
 	InterpSpeed = 800.0f;
 	bEnemyPushBack = false;
 	bToggleEquip = true;
+
+	bTempA = true;
+	bTempB = false;
+
+	PlayTime = 2.0f;
+	PlayTimer = 0.0f;
+	PlayTimerRate = 1.0f;
 }
 
 // Called when the game starts or when spawned
@@ -37,8 +49,11 @@ void AEnemy::BeginPlay()
 
 	MyPlayer = UGameplayStatics::GetPlayerController(this, 0)->GetPawn<AMyPlayer>();
 
-	EnemyCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBegin);
-	EnemyCollision->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEnd);
+	EnemyCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AgroOnOverlapBegin);
+	EnemyCollision->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AgroOnOverlapEnd);
+
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::EnemyOnOverlapBegin);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AEnemy::EnemyOnOverlapEnd);
 
 	LoadActors();
 }
@@ -58,12 +73,22 @@ void AEnemy::Tick(float DeltaTime)
 
 		if (bCanEnemyChoose)
 		{
-			EnemyPlay();
-			ComparePlay();
+			if (bTempA)
+			{
+				EnemyPlay();
+				ComparePlay();
+				bTempA = false;
+			}
+			
 
 			if (MyPlayer->MatchRound <= 3)
 			{
-				NextRound();
+				PlayTimer += (PlayTimerRate * DeltaTime);
+
+				if (PlayTimer >= PlayTime)
+				{
+					NextRound();
+				}	
 			}
 		}
 
@@ -124,49 +149,68 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AEnemy::AgroOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	/*if (OtherActor)
-	{
-		MyPlayer = Cast<AMyPlayer>(OtherActor);
-		if (MyPlayer)
-		{
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Player insight"));
-		}
-	}*/
+	
 }
 
-void AEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void AEnemy::AgroOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	/*if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Player outsight"));*/
+	
+}
+
+void AEnemy::EnemyOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		SpawnBullet = Cast<ASpawnBullet>(OtherActor);
+		if (SpawnBullet)
+		{
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Yup, That's Your Enemy"));
+			SpawnBullet->Destroy();
+		}
+	}
+}
+
+void AEnemy::EnemyOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+
 }
 
 void AEnemy::EnemyPlay()
 {
-	int RandomNumber = (int)FMath::FRandRange(1.0, 4.0);
+	RandomNumber = (int)FMath::FRandRange(1.0, 4.0);
 
 	if (RandomNumber == 1)
 	{
 		EnemyChoice = EEnemyChoice::EEC_Rock;
 
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy Chose Rock"));
+		if (EnemyChoice == EEnemyChoice::EEC_Rock)
+		{
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy Chose Rock"));
+		}
 	}
 	else if (RandomNumber == 2)
 	{
 		EnemyChoice = EEnemyChoice::EEC_Paper;
 
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy Chose Paper"));
+		if (EnemyChoice == EEnemyChoice::EEC_Paper)
+		{
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy Chose Paper"));
+		}
 	}
 	else
 	{
 		EnemyChoice = EEnemyChoice::EEC_Scissors;
 
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy Chose Scissors"));
+		if (EnemyChoice == EEnemyChoice::EEC_Scissors)
+		{
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy Chose Scissors"));
+		}
 	}
 
 	bCanEnemyChoose = false;
@@ -227,15 +271,23 @@ void AEnemy::ComparePlay()
 
 void AEnemy::NextRound()
 {
+	EnemyChoice = EEnemyChoice::EEC_NONE;
+
 	MyPlayer->MatchTimer = 1;
 	MyPlayer->bCanplayerchoose = true;
 	MyPlayer->bStopTimer = false;
 	MyPlayer->PlayerChoice = EPlayerChoice::EPC_NONE;
+	MyPlayer->PlayerAnimTrans = EPlayerAnimTrans::EPAT_Choosing;
 	if (!(bTie))
 	{
 		MyPlayer->MatchRound++;
 	}
 	bTie = false;
+
+	bTempA = true;
+	PlayTimer = 0.0f;
+
+	RandomNumber = -1;
 }
 
 void AEnemy::ChooseWinner()

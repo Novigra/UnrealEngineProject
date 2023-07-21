@@ -58,6 +58,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Collision)
 	class USphereComponent* EnemyCollision;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Match)
+	class ASpawnBullet* SpawnBullet;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Match)
 	bool bCanEnemyChoose;
 
@@ -66,6 +69,18 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Match)
 	AEnemy* testEnemy;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Match)
+	int RandomNumber;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Match)
+	float PlayTime;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Match)
+	float PlayTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Match)
+	float PlayTimerRate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interpolation)
 	bool bEnemyPushBack;
@@ -85,9 +100,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	class AWeapon* EquippedWeapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = TempTrans)
+	bool bTempA;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = TempTrans)
+	bool bTempB;
+
 	bool bTie;
 	bool bCanChooseWinner;
 	bool bToggleEquip;
+
+	FTimerHandle PlayHandle;
 
 protected:
 	// Called when the game starts or when spawned
@@ -108,11 +131,20 @@ public:
 	void LoadActors();
 
 	UFUNCTION()
-	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	virtual void AgroOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	virtual void AgroOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	virtual void EnemyOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	virtual void EnemyOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	FORCEINLINE void SetEnemyWeapon(AWeapon* MyWeapon) { EquippedWeapon = MyWeapon; }
 	FORCEINLINE AWeapon* GetEnemyWeapon() { return EquippedWeapon; }
+
+	FORCEINLINE void SetEnemyChoice(EEnemyChoice myEnemyChoice) { EnemyChoice = myEnemyChoice; }
+	FORCEINLINE EEnemyChoice GetEnemyChoice() { return EnemyChoice; }
 };

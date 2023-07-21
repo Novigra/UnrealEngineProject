@@ -53,6 +53,9 @@ public:
 	// Sets default values for this character's properties
 	AMyPlayer();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = StaticMesh)
+	class UStaticMeshComponent* StaticRootMesh;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Enums)
 	EPlayerStatus PlayerStatus;
 
@@ -71,11 +74,28 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
-	float SpeedNormal;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	FVector InitialCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
-	float SpeedFast;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	float InitialTargetArmLength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	float ZoomedValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	float ZoomRate;
+
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	FVector RpsCamera;*/
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh)
+	FVector InitialMeshLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
+	FVector RpsMeshLocation;
+
+	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Match)
 	int32 RoundPlayerWins;
@@ -113,10 +133,60 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	class AWeapon* EquippedWeapon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	class ASpawnBullet* SpawnBullet;
+
+	/*
+	* Combat related variables
+	*/
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerProperties")
+	float Health;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerProperties")
+	float MaxHealth;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerProperties|Speed")
+	float CurrentSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerProperties|Speed")
+	float WinnerSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerProperties|Speed")
+	float LoserSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerProperties|Speed")
+	float DashSpeed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerProperties|Speed|Dash")
+	bool bCanDash;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerProperties|Speed|Dash")
+	float DashTime;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PlayerProperties")
+	bool bCanPlayerShoot;
+
+	// Used to switch between current speed and dash speed
+	float DashRemainingTime;
+	float DashTimeRate;
+
+	bool bSpeedSwitch;
+	bool bDashSwitch;
 	bool bToggleLog;
 	bool bToggleEquip;
-	FVector InitialCamera;
-	FVector InitialMesh;
+	bool bToggleMeshLoc;
+
+	float Zoom;
+	float InitialZoom;
+	bool bTriggerZooming;
+	bool bTriggerZoomingOut;
+
+	bool bIsPressed;
+
+	/*
+	* Functions implementation is written in the same order to avoid confusion
+	*/
 
 protected:
 	// Called when the game starts or when spawned
@@ -141,25 +211,37 @@ public:
 	// Jump / Stop Jumping
 	void Jump();
 	void StopJumping();
+
+	// Set Character Speed
+	void SetCharacterSpeed();
+	void SetCharacterDash();
 	
-	// Sprint Movement
-	void Sprint();
-	void StopSprinting();
+	// Movement Speed
+	void DashState();
+	void NormalState();
 
 	void PlayerRock();
 	void PlayerPaper();
 	void PlayerScissors();
 
-	void Shoot();
+	void StartShoot();
+	void StopShoot();
+	void Reload();
 	void Aim_Pressed();
 	void Aim_Released();
 
 	void LoadActors();
+	void MeshModification();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void HealthMechanics();
 
 	// Functions (FOR DEBUGGING PURPOSES)
 	void ChangeStatus(); // Change Player Status
 	void RestartTime(); // RestartTimer
 	void RandomNumber();
+	void CheckShooting();
+	void CheckHealth();
 
 	FORCEINLINE bool GetTimeCondition() { return bStopTimer; }
 	FORCEINLINE EPlayerStatus GetPlayerStatus() { return PlayerStatus; }

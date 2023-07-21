@@ -26,6 +26,12 @@ AWeapon::AWeapon()
 
 	bMyTest = true;
 	PlayerWeapon = EPlayerWeapon::EPW_NONE;
+
+	Damage = 1;
+	Bullets = 1;
+	Mag = 1;
+	FireRate = 1.0;
+	FireTime = 0.0;
 }
 
 // Called when the game starts or when spawned
@@ -43,6 +49,11 @@ void AWeapon::BeginPlay()
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	
+	//UE_LOG(LogTemp, Warning, TEXT("FireTime = %f"), FireTime);
+
+	CurrentSpawnerLocation = BulletSpawnTransform->GetRelativeLocation();
 	
 	if (MyPlayer)
 	{
@@ -54,6 +65,29 @@ void AWeapon::Tick(float DeltaTime)
 		else if (MyPlayer->PlayerResult == EPlayerResult::EPR_Loser)
 		{
 			PlayerWeapon = EPlayerWeapon::EPW_Rifle;
+		}
+
+		if (MyPlayer->bIsPressed)
+		{
+			FireTime += (FireRate * DeltaTime);
+			UE_LOG(LogTemp, Warning, TEXT("FireTime = %f"), FireTime);
+
+			if (FireTime > 10)
+			{
+				FireTime = 0.0f;
+				if (Bullets != 0)
+				{
+					MyPlayer->bCanPlayerShoot = true;
+				}
+			}
+
+			if (MyPlayer->bCanPlayerShoot)
+			{
+				if (Bullets != 0)
+				{
+					Bullets--;
+				}
+			}
 		}
 	}
 }
