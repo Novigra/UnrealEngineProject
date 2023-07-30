@@ -103,6 +103,9 @@ void AMyPlayer::BeginPlay()
 
 	InitialMeshLocation = GetMesh()->GetRelativeLocation();
 
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::OnOverlapBegin);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AMyPlayer::OnOverlapEnd);
+
 	LoadActors();
 }
 
@@ -113,45 +116,35 @@ void AMyPlayer::Tick(float DeltaTime)
 
 	if (bTriggerZooming)
 	{
-		Zoom -= (ZoomRate * DeltaTime);
-		Camera->FieldOfView = Zoom;
-		UE_LOG(LogTemp, Warning, TEXT("Zoom = %f"), Zoom);
-
-		if (Zoom <= ZoomedValue)
-		{
-			bTriggerZooming = false;
-		}
+		ZoomIn(DeltaTime);
 	}
 
 	if (bTriggerZoomingOut)
 	{
-		Zoom += (ZoomRate * DeltaTime);
-		Camera->FieldOfView = Zoom;
-		UE_LOG(LogTemp, Warning, TEXT("Zoom = %f"), Zoom);
-
-		if (Zoom >= InitialZoom)
-		{
-			bTriggerZoomingOut = false;
-		}
+		ZoomOut(DeltaTime);
 	}
 
 	// Modify Mesh in runtime
 	MeshModification();
 	
-	// Match Timer
-	if (!(bStopTimer))
+	if (GetPlayerStatus() == EPlayerStatus::EPS_Match)
 	{
-		MatchTimer += (MatchTimerRate * DeltaTime);
-		//UE_LOG(LogTemp, Warning, TEXT("Match Timer = %f"), MatchTimer);
+		// Match Timer
+		if (!(bStopTimer))
+		{
+			MatchTimer += (MatchTimerRate * DeltaTime);
+			//UE_LOG(LogTemp, Warning, TEXT("Match Timer = %f"), MatchTimer);
+		}
+
+		if (MatchTimer > 6)
+		{
+			bCanplayerchoose = false;
+			bStopTimer = true;
+
+			PlayerAnimTrans = EPlayerAnimTrans::EPAT_Playing;
+		}
 	}
 	
-	if (MatchTimer > 6)
-	{
-		bCanplayerchoose = false;
-		bStopTimer = true;
-
-		PlayerAnimTrans = EPlayerAnimTrans::EPAT_Playing;
-	}
 
 	// Push Player to the actor after the match
 	if (Placement)
@@ -213,6 +206,22 @@ void AMyPlayer::Tick(float DeltaTime)
 		}
 
 	}
+}
+
+void AMyPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		if (Placement)
+		{
+			OnPlayerDestination.Broadcast();
+		}
+	}
+}
+
+void AMyPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+
 }
 
 // Called to bind functionality to input
@@ -444,6 +453,30 @@ void AMyPlayer::Aim_Released()
 	{
 		bTriggerZooming = false;
 		bTriggerZoomingOut = true;
+	}
+}
+
+void AMyPlayer::ZoomIn(float DeltaTime)
+{
+	Zoom -= (ZoomRate * DeltaTime);
+	Camera->FieldOfView = Zoom;
+	UE_LOG(LogTemp, Warning, TEXT("Zoom = %f"), Zoom);
+
+	if (Zoom <= ZoomedValue)
+	{
+		bTriggerZooming = false;
+	}
+}
+
+void AMyPlayer::ZoomOut(float DeltaTime)
+{
+	Zoom += (ZoomRate * DeltaTime);
+	Camera->FieldOfView = Zoom;
+	UE_LOG(LogTemp, Warning, TEXT("Zoom = %f"), Zoom);
+
+	if (Zoom >= InitialZoom)
+	{
+		bTriggerZoomingOut = false;
 	}
 }
 

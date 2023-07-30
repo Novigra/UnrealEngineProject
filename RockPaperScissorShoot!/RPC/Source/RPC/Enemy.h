@@ -34,6 +34,8 @@ enum class EEnemyResult : uint8
 	EER_NONE	UMETA(DisplayName = "NONE")
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDestination); 
+
 UCLASS()
 class RPC_API AEnemy : public ACharacter
 {
@@ -82,14 +84,27 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Match)
 	float PlayTimerRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interpolation)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Interpolation)
 	bool bEnemyPushBack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interpolation)
 	float InterpSpeed;
 
+	/*
+	* Combat related
+	*/
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "EnemyProperties|Health")
+	float Health;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "EnemyProperties|Health")
+	float MaxHealth;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interpolation)
 	class AEnemyPlacement* EnemyPlacement;
+
+	UPROPERTY(BlueprintAssignable, Category = Interpolation)
+	FOnEnemyDestination OnEnemyDestination;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	class ARifleWeapon* RifleWeapon;

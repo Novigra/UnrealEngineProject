@@ -44,6 +44,8 @@ enum class EPlayerAnimTrans : uint8
 	EPAT_NONE	UMETA(DisplayName = "NONE")
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDestination); 
+
 UCLASS()
 class RPC_API AMyPlayer : public ACharacter
 {
@@ -115,7 +117,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Match)
 	bool bStopTimer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interpolation)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Interpolation)
 	bool bPushBack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Interpolation)
@@ -123,6 +125,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interpolation)
 	class APlacement* Placement;
+
+	UPROPERTY(BlueprintAssignable, Category = Interpolation)
+	FOnPlayerDestination OnPlayerDestination;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	class ARifleWeapon* RifleWeapon;
@@ -196,6 +201,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -226,9 +237,14 @@ public:
 
 	void StartShoot();
 	void StopShoot();
+
 	void Reload();
+
 	void Aim_Pressed();
 	void Aim_Released();
+
+	void ZoomIn(float DeltaTime);
+	void ZoomOut(float DeltaTime);
 
 	void LoadActors();
 	void MeshModification();

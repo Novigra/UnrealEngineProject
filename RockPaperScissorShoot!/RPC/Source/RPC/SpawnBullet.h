@@ -21,11 +21,23 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = StaticMesh)
 	class UStaticMeshComponent* StaticMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
 	class AMyPlayer* MyPlayer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	class AWeapon* CurrentWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player|Weapon")
+	class AWeapon* PlayerWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+	class AEnemy* Enemy;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Enemy|Weapon")
+	class AWeapon* EnemyWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placement|PlayerPlacement")
+	class APlacement* PlayerPlacement;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placement|EnemyPlacement")
+	class AEnemyPlacement* EnemyPlacement;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BulletProperties)
 	float BulletSpeed;
@@ -40,10 +52,23 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void SetupPlacement();
+
 	UFUNCTION()
 		virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 		virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION()
+		void BindPlayerWeapon();
+
+	UFUNCTION()
+		void BindEnemyWeapon();
+
+	UFUNCTION()
+		void DamagePlayer();
+
+	UFUNCTION()
+		void DamageEnemy();
 };

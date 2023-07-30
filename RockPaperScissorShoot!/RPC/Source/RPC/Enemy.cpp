@@ -40,6 +40,9 @@ AEnemy::AEnemy()
 	PlayTime = 2.0f;
 	PlayTimer = 0.0f;
 	PlayTimerRate = 1.0f;
+
+	Health = 100.0f;
+	MaxHealth = 100.0f;
 }
 
 // Called when the game starts or when spawned
@@ -66,41 +69,46 @@ void AEnemy::Tick(float DeltaTime)
 	
 	if (MyPlayer)
 	{
-		if (MyPlayer->MatchRound <= 3)
+		// DON'T FORGET TO CHANGE EPS TO EES
+		if (EnemyStatus == EEnemyStatus::EES_Match)
 		{
-			bCanEnemyChoose = MyPlayer->GetTimeCondition();
-		}
-
-		if (bCanEnemyChoose)
-		{
-			if (bTempA)
-			{
-				EnemyPlay();
-				ComparePlay();
-				bTempA = false;
-			}
-			
-
 			if (MyPlayer->MatchRound <= 3)
 			{
-				PlayTimer += (PlayTimerRate * DeltaTime);
-
-				if (PlayTimer >= PlayTime)
-				{
-					NextRound();
-				}	
+				bCanEnemyChoose = MyPlayer->GetTimeCondition();
 			}
-		}
 
-		if (MyPlayer->MatchRound == 4)
-		{
-			if (bCanChooseWinner)
+			if (bCanEnemyChoose)
 			{
-				ChooseWinner();
-				SwitchModes();
+				if (bTempA)
+				{
+					EnemyPlay();
+					ComparePlay();
+					bTempA = false;
+				}
+
+
+				if (MyPlayer->MatchRound <= 3)
+				{
+					PlayTimer += (PlayTimerRate * DeltaTime);
+
+					if (PlayTimer >= PlayTime)
+					{
+						NextRound();
+					}
+				}
 			}
-			bCanChooseWinner = false;
+
+			if (MyPlayer->MatchRound == 4)
+			{
+				if (bCanChooseWinner)
+				{
+					ChooseWinner();
+					SwitchModes();
+				}
+				bCanChooseWinner = false;
+			}
 		}
+		
 
 		if (EnemyStatus == EEnemyStatus::EES_Fight)
 		{
@@ -151,7 +159,13 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AEnemy::AgroOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
+	if (OtherActor)
+	{
+		if (EnemyPlacement)
+		{
+			OnEnemyDestination.Broadcast();
+		}
+	}
 }
 
 void AEnemy::AgroOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
