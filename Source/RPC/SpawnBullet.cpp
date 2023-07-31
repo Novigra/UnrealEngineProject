@@ -46,23 +46,23 @@ void ASpawnBullet::Tick(float DeltaTime)
 
 }
 
-void ASpawnBullet::SetupPlacement()
-{
-	MyPlayer = UGameplayStatics::GetPlayerController(this, 0)->GetPawn<AMyPlayer>();
-
-	AActor* FoundEnemy = UGameplayStatics::GetActorOfClass(this, AEnemy::StaticClass());
-	Enemy = Cast<AEnemy>(FoundEnemy);
-
-	if (MyPlayer)
-	{
-		MyPlayer->OnPlayerDestination.AddDynamic(this, &ASpawnBullet::BindPlayerWeapon);
-	}
-
-	if (Enemy)
-	{
-		Enemy->OnEnemyDestination.AddDynamic(this, &ASpawnBullet::BindEnemyWeapon);
-	}
-}
+//void ASpawnBullet::SetupPlacement()
+//{
+//	MyPlayer = UGameplayStatics::GetPlayerController(this, 0)->GetPawn<AMyPlayer>();
+//
+//	AActor* FoundEnemy = UGameplayStatics::GetActorOfClass(this, AEnemy::StaticClass());
+//	Enemy = Cast<AEnemy>(FoundEnemy);
+//
+//	if (MyPlayer)
+//	{
+//		MyPlayer->OnPlayerDestination.AddDynamic(this, &ASpawnBullet::BindPlayerWeapon);
+//	}
+//
+//	if (Enemy)
+//	{
+//		Enemy->OnEnemyDestination.AddDynamic(this, &ASpawnBullet::BindEnemyWeapon);
+//	}
+//}
 
 void ASpawnBullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

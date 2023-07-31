@@ -65,7 +65,6 @@ AMyPlayer::AMyPlayer()
 	InterpSpeed = 100.0f;
 
 	bToggleLog = true;
-	bToggleEquip = true;
 	bToggleMeshLoc = true;
 
 	// Character Properties
@@ -78,13 +77,7 @@ AMyPlayer::AMyPlayer()
 	LoserSpeed = 400.0f;
 	DashSpeed = 1000.0f;
 
-	DashTime = 0.5f;
-	DashRemainingTime = 0.0f;
-	DashTimeRate = 1.0f;
-
 	bCanDash = false;
-	bSpeedSwitch = true;
-	bDashSwitch = false;
 	bCanPlayerShoot = false;
 
 	Zoom = Camera->FieldOfView;
@@ -94,6 +87,9 @@ AMyPlayer::AMyPlayer()
 	bTriggerZoomingOut = false;
 
 	bIsPressed = false;
+
+	PlayerDashDirection = FVector(0.0f);
+	PlayerDashSpeed = 1000.0f;
 }
 
 // Called when the game starts or when spawned
@@ -102,6 +98,9 @@ void AMyPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	InitialMeshLocation = GetMesh()->GetRelativeLocation();
+	GetMesh()->SetRelativeLocation(RpsMeshLocation);
+
+	PlayerControllerRef = UGameplayStatics::GetPlayerController(this, 0);
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AMyPlayer::OnOverlapEnd);
@@ -125,7 +124,7 @@ void AMyPlayer::Tick(float DeltaTime)
 	}
 
 	// Modify Mesh in runtime
-	MeshModification();
+	//MeshModification();
 	
 	if (GetPlayerStatus() == EPlayerStatus::EPS_Match)
 	{
@@ -157,55 +156,6 @@ void AMyPlayer::Tick(float DeltaTime)
 			SetActorLocation(InterpLocation);
 		}
 	}
-
-	if (PlayerStatus == EPlayerStatus::EPS_Fight)
-	{
-		// Equip Weapon
-		if (ShotgunWeapon)
-		{
-			if (ShotgunWeapon->Weapon && bToggleEquip)
-			{
-				SetEquippedWeapon(ShotgunWeapon);
-				bToggleEquip = false;
-			}
-		}
-
-		if (RifleWeapon)
-		{
-			if (RifleWeapon->Weapon && bToggleEquip)
-			{
-				SetEquippedWeapon(RifleWeapon);
-				bToggleEquip = false;
-			}
-		}
-
-		if (bSpeedSwitch)
-		{
-			SetCharacterSpeed();
-			SetCharacterDash();
-
-			bSpeedSwitch = false;
-		}
-
-		if (bCanDash)
-		{
-			if (bDashSwitch)
-			{
-				if (DashTime > DashRemainingTime)
-				{
-					GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
-					DashRemainingTime += (DashTimeRate * DeltaTime);
-				}
-				else
-				{
-					GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
-					DashRemainingTime = 0.0f;
-					bDashSwitch = false;
-				}
-			}
-		}
-
-	}
 }
 
 void AMyPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -214,8 +164,30 @@ void AMyPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 	{
 		if (Placement)
 		{
-			OnPlayerDestination.Broadcast();
+			GetMesh()->SetRelativeLocation(InitialMeshLocation);
 		}
+	}
+
+	if (PlayerStatus == EPlayerStatus::EPS_Fight)
+	{
+		if (ShotgunWeapon)
+		{
+			if (ShotgunWeapon->Weapon)
+			{
+				SetEquippedWeapon(ShotgunWeapon);
+			}
+		}
+
+		if (RifleWeapon)
+		{
+			if (RifleWeapon->Weapon)
+			{
+				SetEquippedWeapon(RifleWeapon);
+			}
+		}
+
+		SetCharacterSpeed();
+		SetCharacterDash();
 	}
 }
 
@@ -240,8 +212,7 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMyPlayer::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMyPlayer::StopJumping);
 
-	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMyPlayer::DashState);
-	PlayerInputComponent->BindAction("Dash", IE_Released, this, &AMyPlayer::NormalState);
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMyPlayer::Dash);
 
 	PlayerInputComponent->BindAction("PlayerRock", IE_Pressed, this, &AMyPlayer::PlayerRock);
 	PlayerInputComponent->BindAction("PlayerPaper", IE_Pressed, this, &AMyPlayer::PlayerPaper);
@@ -269,6 +240,15 @@ void AMyPlayer::FBMovement(float value)
 		const FRotator YawRotation(0.0f, Rotation.Yaw, 0.0f);
 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		
+		if (value > 0)
+		{
+			PlayerDashDirection = Direction;
+		}
+		else
+		{
+			PlayerDashDirection = -Direction;
+		}
 		AddMovementInput(Direction, value);
 	}
 }
@@ -282,6 +262,15 @@ void AMyPlayer::RLMovement(float value)
 		const FRotator YawRotation(0.0f, Rotation.Yaw, 0.0f);
 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		
+		if (value > 0)
+		{
+			PlayerDashDirection = Direction;
+		}
+		else
+		{
+			PlayerDashDirection = -Direction;
+		}
 		AddMovementInput(Direction, value);
 	}
 }
@@ -345,14 +334,12 @@ void AMyPlayer::SetCharacterDash()
 	}
 }
 
-void AMyPlayer::DashState()
+void AMyPlayer::Dash()
 {
-	bDashSwitch = true;
-}
-
-void AMyPlayer::NormalState()
-{
-
+	if (GetCharacterMovement()->IsMovingOnGround() && bCanDash)
+	{
+		GetCharacterMovement()->AddImpulse(PlayerDashDirection * PlayerDashSpeed, true);
+	}
 }
 
 void AMyPlayer::PlayerRock()

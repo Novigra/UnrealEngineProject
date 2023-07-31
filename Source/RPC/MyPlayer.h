@@ -44,8 +44,6 @@ enum class EPlayerAnimTrans : uint8
 	EPAT_NONE	UMETA(DisplayName = "NONE")
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDestination); 
-
 UCLASS()
 class RPC_API AMyPlayer : public ACharacter
 {
@@ -54,6 +52,9 @@ class RPC_API AMyPlayer : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AMyPlayer();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player)
+	class APlayerController* PlayerControllerRef;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = StaticMesh)
 	class UStaticMeshComponent* StaticRootMesh;
@@ -97,8 +98,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	FVector RpsMeshLocation;
 
-	
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Match)
 	int32 RoundPlayerWins;
 
@@ -125,9 +124,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interpolation)
 	class APlacement* Placement;
-
-	UPROPERTY(BlueprintAssignable, Category = Interpolation)
-	FOnPlayerDestination OnPlayerDestination;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	class ARifleWeapon* RifleWeapon;
@@ -164,22 +160,18 @@ public:
 	float DashSpeed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerProperties|Speed|Dash")
-	bool bCanDash;
+	FVector PlayerDashDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerProperties|Speed|Dash")
-	float DashTime;
+	float PlayerDashSpeed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerProperties|Speed|Dash")
+	bool bCanDash;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PlayerProperties")
 	bool bCanPlayerShoot;
 
-	// Used to switch between current speed and dash speed
-	float DashRemainingTime;
-	float DashTimeRate;
-
-	bool bSpeedSwitch;
-	bool bDashSwitch;
 	bool bToggleLog;
-	bool bToggleEquip;
 	bool bToggleMeshLoc;
 
 	float Zoom;
@@ -228,8 +220,7 @@ public:
 	void SetCharacterDash();
 	
 	// Movement Speed
-	void DashState();
-	void NormalState();
+	void Dash();
 
 	void PlayerRock();
 	void PlayerPaper();
