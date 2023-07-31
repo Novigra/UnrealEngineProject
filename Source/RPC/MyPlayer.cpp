@@ -241,14 +241,6 @@ void AMyPlayer::FBMovement(float value)
 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		
-		if (value > 0)
-		{
-			PlayerDashDirection = Direction;
-		}
-		else
-		{
-			PlayerDashDirection = -Direction;
-		}
 		AddMovementInput(Direction, value);
 	}
 }
@@ -263,14 +255,6 @@ void AMyPlayer::RLMovement(float value)
 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		
-		if (value > 0)
-		{
-			PlayerDashDirection = Direction;
-		}
-		else
-		{
-			PlayerDashDirection = -Direction;
-		}
 		AddMovementInput(Direction, value);
 	}
 }
@@ -338,6 +322,7 @@ void AMyPlayer::Dash()
 {
 	if (GetCharacterMovement()->IsMovingOnGround() && bCanDash)
 	{
+		PlayerDashDirection = GetCharacterMovement()->Velocity;
 		GetCharacterMovement()->AddImpulse(PlayerDashDirection * PlayerDashSpeed, true);
 	}
 }
