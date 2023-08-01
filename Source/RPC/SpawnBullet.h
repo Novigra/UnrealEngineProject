@@ -15,6 +15,9 @@ public:
 	// Sets default values for this actor's properties
 	ASpawnBullet();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ProjectileMovement)
+	class UProjectileMovementComponent* ProjectileMovement;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Collision)
 	class UCapsuleComponent* BulletCollision;
 

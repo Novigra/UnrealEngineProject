@@ -106,6 +106,16 @@ void AMyPlayer::BeginPlay()
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AMyPlayer::OnOverlapEnd);
 
 	LoadActors();
+
+	if (GetWorld())
+	{
+		CameraManager = Cast<APlayerCameraManager>(UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0));
+	}
+	if (CameraManager)
+	{
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("WE GOT THE CAMERA!!!"));
+	}
 }
 
 // Called every frame

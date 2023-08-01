@@ -53,6 +53,9 @@ public:
 	// Sets default values for this character's properties
 	AMyPlayer();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	class APlayerCameraManager* CameraManager;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player)
 	class APlayerController* PlayerControllerRef;
 
