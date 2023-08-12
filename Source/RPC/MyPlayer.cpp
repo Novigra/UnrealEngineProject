@@ -172,33 +172,44 @@ void AMyPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 {
 	if (OtherActor)
 	{
-		if (Placement)
+		if (OtherActor->IsA(APlacement::StaticClass()))
 		{
 			GetMesh()->SetRelativeLocation(InitialMeshLocation);
+
+			if ((PlayerResult == EPlayerResult::EPR_Winner) && (PlayerStatus == EPlayerStatus::EPS_Pending))
+			{
+				ShotgunWeapon->SetupWeapon();
+			}
+			else if((PlayerResult == EPlayerResult::EPR_Loser) && (PlayerStatus == EPlayerStatus::EPS_Pending))
+			{
+				RifleWeapon->SetupWeapon();
+			}
+
+			if (PlayerStatus == EPlayerStatus::EPS_Pending)
+			{
+				if (ShotgunWeapon)
+				{
+					if (ShotgunWeapon->Weapon)
+					{
+						SetEquippedWeapon(ShotgunWeapon);
+					}
+				}
+
+				if (RifleWeapon)
+				{
+					if (RifleWeapon->Weapon)
+					{
+						SetEquippedWeapon(RifleWeapon);
+					}
+				}
+
+				SetCharacterSpeed();
+				SetCharacterDash();
+			}
 		}
 	}
 
-	if (PlayerStatus == EPlayerStatus::EPS_Fight)
-	{
-		if (ShotgunWeapon)
-		{
-			if (ShotgunWeapon->Weapon)
-			{
-				SetEquippedWeapon(ShotgunWeapon);
-			}
-		}
-
-		if (RifleWeapon)
-		{
-			if (RifleWeapon->Weapon)
-			{
-				SetEquippedWeapon(RifleWeapon);
-			}
-		}
-
-		SetCharacterSpeed();
-		SetCharacterDash();
-	}
+	
 }
 
 void AMyPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -380,13 +391,23 @@ void AMyPlayer::StartShoot()
 {
 	if (PlayerStatus == EPlayerStatus::EPS_Fight)
 	{
-		bIsPressed = true;
-		if (EquippedWeapon->Bullets != 0)
-		{
-			bCanPlayerShoot = true;
-		}
+		bCanPlayerShoot = true;
+		EquippedWeapon->Shoot();
 	}
 }
+
+/*******************How I used to implement***************************/
+//void AMyPlayer::StartShoot()
+//{
+//	if (PlayerStatus == EPlayerStatus::EPS_Fight)
+//	{
+//		bIsPressed = true;
+//		if (EquippedWeapon->Bullets != 0)
+//		{
+//			bCanPlayerShoot = true;
+//		}
+//	}
+//}
 
 //void AMyPlayer::StartShoot()
 //{
@@ -405,13 +426,23 @@ void AMyPlayer::StartShoot()
 //	}
 //}
 
+/*******************How I used to implement***************************/
+//void AMyPlayer::StopShoot()
+//{
+//	if (PlayerStatus == EPlayerStatus::EPS_Fight)
+//	{
+//		bIsPressed = false;
+//		bCanPlayerShoot = false;
+//		EquippedWeapon->FireTime = 0.0f;
+//	}
+//}
+
+
 void AMyPlayer::StopShoot()
 {
 	if (PlayerStatus == EPlayerStatus::EPS_Fight)
 	{
-		bIsPressed = false;
 		bCanPlayerShoot = false;
-		EquippedWeapon->FireTime = 0.0f;
 	}
 }
 

@@ -43,6 +43,8 @@ public:
 
 	void SetupWeapon();
 
+	virtual void Shoot() override;
+
 	FORCEINLINE void SetWeapon(ARifleWeapon* MyWeapon) { Weapon = MyWeapon; }
 	FORCEINLINE ARifleWeapon* GetWeapon() { return Weapon; }
 };

@@ -110,7 +110,7 @@ void AEnemy::Tick(float DeltaTime)
 		}
 		
 
-		if (EnemyStatus == EEnemyStatus::EES_Fight)
+		/*if (EnemyStatus == EEnemyStatus::EES_Fight)
 		{
 			if (ShotgunWeapon)
 			{
@@ -133,7 +133,7 @@ void AEnemy::Tick(float DeltaTime)
 						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has shotgun"));
 				}
 			}
-		}
+		}*/
 	}
 
 	if (EnemyPlacement)
@@ -161,9 +161,43 @@ void AEnemy::AgroOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 {
 	if (OtherActor)
 	{
-		if (EnemyPlacement)
+		if (OtherActor->IsA(AEnemyPlacement::StaticClass()) && (EnemyStatus == EEnemyStatus::EES_Pending))
 		{
 			OnEnemyDestination.Broadcast();
+
+			if ((EnemyResult == EEnemyResult::EER_Winner) && (EnemyStatus == EEnemyStatus::EES_Pending))
+			{
+				ShotgunWeapon->SetupWeapon();
+			}
+			else if((EnemyResult == EEnemyResult::EER_Loser) && (EnemyStatus == EEnemyStatus::EES_Pending))
+			{
+				RifleWeapon->SetupWeapon();
+			}
+
+			if (EnemyStatus == EEnemyStatus::EES_Fight)
+			{
+				if (ShotgunWeapon)
+				{
+					if ((MyPlayer->GetEquippedWeapon() == ShotgunWeapon) && bToggleEquip)
+					{
+						SetEnemyWeapon(RifleWeapon);
+						bToggleEquip = false;
+						if (GEngine)
+							GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has rifle"));
+					}
+				}
+
+				if (RifleWeapon)
+				{
+					if ((MyPlayer->GetEquippedWeapon() == RifleWeapon) && bToggleEquip)
+					{
+						SetEnemyWeapon(ShotgunWeapon);
+						bToggleEquip = false;
+						if (GEngine)
+							GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has shotgun"));
+					}
+				}
+			}
 		}
 	}
 }

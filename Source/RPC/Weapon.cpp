@@ -67,7 +67,7 @@ void AWeapon::Tick(float DeltaTime)
 			PlayerWeapon = EPlayerWeapon::EPW_Rifle;
 		}
 
-		if (MyPlayer->bIsPressed)
+		/*if (MyPlayer->bIsPressed)
 		{
 			FireTime += (FireRate * DeltaTime);
 			UE_LOG(LogTemp, Warning, TEXT("FireTime = %f"), FireTime);
@@ -88,6 +88,11 @@ void AWeapon::Tick(float DeltaTime)
 					Bullets--;
 				}
 			}
-		}
+		}*/
 	}
+}
+
+void AWeapon::Shoot()
+{
+
 }

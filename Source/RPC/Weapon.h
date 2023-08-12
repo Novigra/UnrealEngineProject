@@ -60,6 +60,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
 	float FireTime;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	TSubclassOf<class ASpawnBullet> SpawnBullet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	class APlayerCameraManager* PlayerCameraManager;
+
 	FVector CurrentSpawnerLocation;
 
 protected:
@@ -69,6 +75,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void Shoot();
 
 	EPlayerWeapon GetPlayerWeapon() { return PlayerWeapon; }
 };

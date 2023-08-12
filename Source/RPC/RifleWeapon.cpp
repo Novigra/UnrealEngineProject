@@ -37,34 +37,35 @@ void ARifleWeapon::Tick(float DeltaTime)
 		{
 			MyPlayer->bCanPlayerShoot = false;
 		}*/	
-	}
 
-	if ((PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
-	{
-		if (bToggleLog)
+		/*if ((PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
 		{
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Rifle"));
-			bToggleLog = false;
-		}
+			if (bToggleLog)
+			{
+				if (GEngine)
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Rifle"));
+				bToggleLog = false;
+			}
 
-		if (bTestEquip)
+			if (bTestEquip)
+			{
+				SetWeapon(this);
+				SetupWeapon();
+				bTestEquip = false;
+			}
+
+		}
+		else if (!(PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
 		{
-			SetWeapon(this);
-			SetupWeapon();
-			bTestEquip = false;
-		}
+			if (bTestEquip)
+			{
+				SetupWeapon();
+				bTestEquip = false;
+			}
+		}*/
 
+		Shoot();
 	}
-	else if (!(PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
-	{
-		if (bTestEquip)
-		{
-			SetupWeapon();
-			bTestEquip = false;
-		}
-	}
-
 }
 
 void ARifleWeapon::SetupWeapon()
@@ -74,21 +75,35 @@ void ARifleWeapon::SetupWeapon()
 
 	SkeletalMesh->SetSimulatePhysics(false);
 
-	if (PlayerWeapon == EPlayerWeapon::EPW_Rifle)
+	if (MyPlayer || Enemy)
 	{
-		const USkeletalMeshSocket* LeftHandSocket = MyPlayer->GetMesh()->GetSocketByName("L_palmSocket");
-		if (LeftHandSocket)
+		if ((PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
 		{
-			LeftHandSocket->AttachActor(this, MyPlayer->GetMesh());
-		}
-	}
-	else
-	{
-		const USkeletalMeshSocket* LeftHandSocket = Enemy->GetMesh()->GetSocketByName("LeftHandSocket");
-		if (LeftHandSocket)
-		{
-			LeftHandSocket->AttachActor(this, Enemy->GetMesh());
-		}
-	}
+			SetWeapon(this);
 
+			const USkeletalMeshSocket* LeftHandSocket = MyPlayer->GetMesh()->GetSocketByName("L_palmSocket");
+			if (LeftHandSocket)
+			{
+				LeftHandSocket->AttachActor(this, MyPlayer->GetMesh());
+			}
+		}
+		else
+		{
+			const USkeletalMeshSocket* LeftHandSocket = Enemy->GetMesh()->GetSocketByName("LeftHandSocket");
+			if (LeftHandSocket)
+			{
+				LeftHandSocket->AttachActor(this, Enemy->GetMesh());
+			}
+		}
+	}
+}
+
+void ARifleWeapon::Shoot()
+{
+	/*if (MyPlayer->bCanPlayerShoot && IsValid(SpawnBullet))
+	{
+		PlayerCameraManager = MyPlayer->CameraManager;
+
+
+	}*/
 }

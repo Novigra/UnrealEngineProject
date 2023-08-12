@@ -39,7 +39,7 @@ void AShotgunWeapon::Tick(float DeltaTime)
 		}*/
 	}
 
-	if ((PlayerWeapon == EPlayerWeapon::EPW_Shotgun) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
+	/*if ((PlayerWeapon == EPlayerWeapon::EPW_Shotgun) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
 	{
 		if (bToggleLog)
 		{
@@ -65,7 +65,7 @@ void AShotgunWeapon::Tick(float DeltaTime)
 			if (GEngine)
 				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("YAAAAAAAAAA"));
 		}
-	}
+	}*/
 }
 
 void AShotgunWeapon::SetupWeapon()
@@ -75,22 +75,33 @@ void AShotgunWeapon::SetupWeapon()
 
 	SkeletalMesh->SetSimulatePhysics(false);
 
-	if (PlayerWeapon == EPlayerWeapon::EPW_Shotgun)
+	if (MyPlayer || Enemy)
 	{
-		const USkeletalMeshSocket* LeftHandSocket = MyPlayer->GetMesh()->GetSocketByName("L_palmSocket");
-		if (LeftHandSocket)
+		if ((PlayerWeapon == EPlayerWeapon::EPW_Shotgun) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
 		{
-			LeftHandSocket->AttachActor(this, MyPlayer->GetMesh());
+			SetWeapon(this);
+			
+			const USkeletalMeshSocket* LeftHandSocket = MyPlayer->GetMesh()->GetSocketByName("L_palmSocket");
+			if (LeftHandSocket)
+			{
+				LeftHandSocket->AttachActor(this, MyPlayer->GetMesh());
+			}
+		}
+		else
+		{
+			const USkeletalMeshSocket* LeftHandSocket = Enemy->GetMesh()->GetSocketByName("LeftHandSocket");
+			if (LeftHandSocket)
+			{
+				LeftHandSocket->AttachActor(this, Enemy->GetMesh());
+				if (GEngine)
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("YOOOOOOOOOOOOOO"));
+			}
 		}
 	}
-	else
-	{
-		const USkeletalMeshSocket* LeftHandSocket = Enemy->GetMesh()->GetSocketByName("LeftHandSocket");
-		if (LeftHandSocket)
-		{
-			LeftHandSocket->AttachActor(this, Enemy->GetMesh());
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("YOOOOOOOOOOOOOO"));
-		}
-	}
+}
+
+void AShotgunWeapon::Shoot()
+{
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("Yup, that's a child class! (Shotgun)"));
 }
