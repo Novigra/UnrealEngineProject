@@ -21,18 +21,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	ARifleWeapon* Weapon;
 
-	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
-	int32 Damage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
-	int32 Bullets;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
-	int32 Mag;*/
-
-	bool bToggleLog;
-	bool bTestEquip;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -41,7 +29,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void SetupWeapon();
+	virtual void SetupWeapon() override;
+
+	virtual void StartShooting() override;
+
+	virtual void StopShooting() override;
 
 	virtual void Shoot() override;
 

@@ -174,35 +174,12 @@ void AMyPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 	{
 		if (OtherActor->IsA(APlacement::StaticClass()))
 		{
-			GetMesh()->SetRelativeLocation(InitialMeshLocation);
+			OnPlayerDestination.Broadcast();
 
-			if ((PlayerResult == EPlayerResult::EPR_Winner) && (PlayerStatus == EPlayerStatus::EPS_Pending))
-			{
-				ShotgunWeapon->SetupWeapon();
-			}
-			else if((PlayerResult == EPlayerResult::EPR_Loser) && (PlayerStatus == EPlayerStatus::EPS_Pending))
-			{
-				RifleWeapon->SetupWeapon();
-			}
+			GetMesh()->SetRelativeLocation(InitialMeshLocation);
 
 			if (PlayerStatus == EPlayerStatus::EPS_Pending)
 			{
-				if (ShotgunWeapon)
-				{
-					if (ShotgunWeapon->Weapon)
-					{
-						SetEquippedWeapon(ShotgunWeapon);
-					}
-				}
-
-				if (RifleWeapon)
-				{
-					if (RifleWeapon->Weapon)
-					{
-						SetEquippedWeapon(RifleWeapon);
-					}
-				}
-
 				SetCharacterSpeed();
 				SetCharacterDash();
 			}
@@ -391,58 +368,15 @@ void AMyPlayer::StartShoot()
 {
 	if (PlayerStatus == EPlayerStatus::EPS_Fight)
 	{
-		bCanPlayerShoot = true;
-		EquippedWeapon->Shoot();
+		OnStartShooting.Broadcast();
 	}
 }
-
-/*******************How I used to implement***************************/
-//void AMyPlayer::StartShoot()
-//{
-//	if (PlayerStatus == EPlayerStatus::EPS_Fight)
-//	{
-//		bIsPressed = true;
-//		if (EquippedWeapon->Bullets != 0)
-//		{
-//			bCanPlayerShoot = true;
-//		}
-//	}
-//}
-
-//void AMyPlayer::StartShoot()
-//{
-//	if (PlayerStatus == EPlayerStatus::EPS_Fight)
-//	{
-//		if ( (EquippedWeapon->FireTime == 0.0f))
-//		{
-//			bCanPlayerShoot = true;
-//
-//			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::Printf(TEXT("Bullets = %d"),EquippedWeapon->Bullets));
-//		}
-//		/*else
-//		{
-//			bCanPlayerShoot = false;
-//		}*/
-//	}
-//}
-
-/*******************How I used to implement***************************/
-//void AMyPlayer::StopShoot()
-//{
-//	if (PlayerStatus == EPlayerStatus::EPS_Fight)
-//	{
-//		bIsPressed = false;
-//		bCanPlayerShoot = false;
-//		EquippedWeapon->FireTime = 0.0f;
-//	}
-//}
-
 
 void AMyPlayer::StopShoot()
 {
 	if (PlayerStatus == EPlayerStatus::EPS_Fight)
 	{
-		bCanPlayerShoot = false;
+		OnStopShooting.Broadcast();
 	}
 }
 
@@ -497,12 +431,6 @@ void AMyPlayer::LoadActors()
 {
 	AActor* FoundActor = UGameplayStatics::GetActorOfClass(this, APlacement::StaticClass());
 	Placement = Cast<APlacement>(FoundActor);
-
-	AActor* FoundWeapon = UGameplayStatics::GetActorOfClass(this, ARifleWeapon::StaticClass());
-	RifleWeapon = Cast<ARifleWeapon>(FoundWeapon);
-
-	FoundWeapon = UGameplayStatics::GetActorOfClass(this, AShotgunWeapon::StaticClass());
-	ShotgunWeapon = Cast<AShotgunWeapon>(FoundWeapon);
 }
 
 void AMyPlayer::MeshModification()

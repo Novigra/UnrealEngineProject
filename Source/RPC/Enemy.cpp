@@ -108,32 +108,6 @@ void AEnemy::Tick(float DeltaTime)
 				bCanChooseWinner = false;
 			}
 		}
-		
-
-		/*if (EnemyStatus == EEnemyStatus::EES_Fight)
-		{
-			if (ShotgunWeapon)
-			{
-				if ((MyPlayer->GetEquippedWeapon() == ShotgunWeapon) && bToggleEquip)
-				{
-					SetEnemyWeapon(RifleWeapon);
-					bToggleEquip = false;
-					if (GEngine)
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has rifle"));
-				}
-			}
-
-			if (RifleWeapon)
-			{
-				if ((MyPlayer->GetEquippedWeapon() == RifleWeapon) && bToggleEquip)
-				{
-					SetEnemyWeapon(ShotgunWeapon);
-					bToggleEquip = false;
-					if (GEngine)
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has shotgun"));
-				}
-			}
-		}*/
 	}
 
 	if (EnemyPlacement)
@@ -164,40 +138,6 @@ void AEnemy::AgroOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 		if (OtherActor->IsA(AEnemyPlacement::StaticClass()) && (EnemyStatus == EEnemyStatus::EES_Pending))
 		{
 			OnEnemyDestination.Broadcast();
-
-			if ((EnemyResult == EEnemyResult::EER_Winner) && (EnemyStatus == EEnemyStatus::EES_Pending))
-			{
-				ShotgunWeapon->SetupWeapon();
-			}
-			else if((EnemyResult == EEnemyResult::EER_Loser) && (EnemyStatus == EEnemyStatus::EES_Pending))
-			{
-				RifleWeapon->SetupWeapon();
-			}
-
-			if (EnemyStatus == EEnemyStatus::EES_Fight)
-			{
-				if (ShotgunWeapon)
-				{
-					if ((MyPlayer->GetEquippedWeapon() == ShotgunWeapon) && bToggleEquip)
-					{
-						SetEnemyWeapon(RifleWeapon);
-						bToggleEquip = false;
-						if (GEngine)
-							GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has rifle"));
-					}
-				}
-
-				if (RifleWeapon)
-				{
-					if ((MyPlayer->GetEquippedWeapon() == RifleWeapon) && bToggleEquip)
-					{
-						SetEnemyWeapon(ShotgunWeapon);
-						bToggleEquip = false;
-						if (GEngine)
-							GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Enemy has shotgun"));
-					}
-				}
-			}
 		}
 	}
 }
@@ -369,9 +309,7 @@ void AEnemy::SwitchModes()
 
 void AEnemy::LoadActors()
 {
-	AActor* FoundWeapon = UGameplayStatics::GetActorOfClass(this, ARifleWeapon::StaticClass());
-	RifleWeapon = Cast<ARifleWeapon>(FoundWeapon);
+	
 
-	FoundWeapon = UGameplayStatics::GetActorOfClass(this, AShotgunWeapon::StaticClass());
-	ShotgunWeapon = Cast<AShotgunWeapon>(FoundWeapon);
+	
 }

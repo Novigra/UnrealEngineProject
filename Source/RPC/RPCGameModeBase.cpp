@@ -2,6 +2,8 @@
 
 
 #include "RPCGameModeBase.h"
+#include "MyPlayer.h"
+#include "Enemy.h"
 
 
 ARPCGameModeBase::ARPCGameModeBase()

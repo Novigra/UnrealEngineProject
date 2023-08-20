@@ -32,6 +32,10 @@ AWeapon::AWeapon()
 	Mag = 1;
 	FireRate = 1.0;
 	FireTime = 0.0;
+
+	bShoot = false;
+
+	BulletEndDistance = 10000.0f;
 }
 
 // Called when the game starts or when spawned
@@ -50,49 +54,39 @@ void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	
-	//UE_LOG(LogTemp, Warning, TEXT("FireTime = %f"), FireTime);
-
 	CurrentSpawnerLocation = BulletSpawnTransform->GetRelativeLocation();
 	
+}
+
+void AWeapon::SetupWeapon()
+{
 	if (MyPlayer)
 	{
 		if (MyPlayer->PlayerResult == EPlayerResult::EPR_Winner)
 		{
 			PlayerWeapon = EPlayerWeapon::EPW_Shotgun;
-			
+
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Player Is A Winner And The Weapon Is A Shotgun"));
 		}
 		else if (MyPlayer->PlayerResult == EPlayerResult::EPR_Loser)
 		{
 			PlayerWeapon = EPlayerWeapon::EPW_Rifle;
+
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Player Is A Loser And The Weapon Is A Rifle"));
 		}
-
-		/*if (MyPlayer->bIsPressed)
-		{
-			FireTime += (FireRate * DeltaTime);
-			UE_LOG(LogTemp, Warning, TEXT("FireTime = %f"), FireTime);
-
-			if (FireTime > 10)
-			{
-				FireTime = 0.0f;
-				if (Bullets != 0)
-				{
-					MyPlayer->bCanPlayerShoot = true;
-				}
-			}
-
-			if (MyPlayer->bCanPlayerShoot)
-			{
-				if (Bullets != 0)
-				{
-					Bullets--;
-				}
-			}
-		}*/
 	}
 }
 
-void AWeapon::Shoot()
+void AWeapon::StartShooting()
 {
-
+	bShoot = true;
 }
+
+void AWeapon::StopShooting()
+{
+	bShoot = false;
+}
+
+void AWeapon::Shoot(){}

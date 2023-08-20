@@ -44,6 +44,10 @@ enum class EPlayerAnimTrans : uint8
 	EPAT_NONE	UMETA(DisplayName = "NONE")
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDestination);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartShooting);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStopShooting);
+
 UCLASS()
 class RPC_API AMyPlayer : public ACharacter
 {
@@ -52,6 +56,15 @@ class RPC_API AMyPlayer : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AMyPlayer();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerDestination OnPlayerDestination;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnStartShooting OnStartShooting;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnStopShooting OnStopShooting;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class APlayerCameraManager* CameraManager;
@@ -127,12 +140,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interpolation)
 	class APlacement* Placement;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	class ARifleWeapon* RifleWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	class AShotgunWeapon* ShotgunWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	class AWeapon* EquippedWeapon;

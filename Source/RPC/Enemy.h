@@ -107,12 +107,6 @@ public:
 	FOnEnemyDestination OnEnemyDestination;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	class ARifleWeapon* RifleWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	class AShotgunWeapon* ShotgunWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	class AWeapon* EquippedWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = TempTrans)

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "SpawnBullet.h"
 #include "Weapon.generated.h"
 
 UENUM(BlueprintType)
@@ -61,12 +62,22 @@ public:
 	float FireTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
-	TSubclassOf<class ASpawnBullet> SpawnBullet;
+	TSubclassOf<ASpawnBullet> SpawnBullet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
+	bool bShoot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	float BulletEndDistance;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class APlayerCameraManager* PlayerCameraManager;
 
 	FVector CurrentSpawnerLocation;
+
+	UWorld* CurrentLevel;
+
+	FTimerHandle TimerHandle;
 
 protected:
 	// Called when the game starts or when spawned
@@ -76,6 +87,16 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	virtual void SetupWeapon();
+
+	UFUNCTION()
+	virtual void StartShooting();
+
+	UFUNCTION()
+	virtual void StopShooting();
+
+	UFUNCTION()
 	virtual void Shoot();
 
 	EPlayerWeapon GetPlayerWeapon() { return PlayerWeapon; }

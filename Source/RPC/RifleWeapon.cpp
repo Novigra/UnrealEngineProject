@@ -4,6 +4,7 @@
 #include "RifleWeapon.h"
 #include "MyPlayer.h"
 #include "Enemy.h"
+#include "Components/ArrowComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 
 
@@ -15,71 +16,39 @@ ARifleWeapon::ARifleWeapon()
 	Bullets = 25;
 	Mag = 25;
 	FireRate = 10;
-
-	bToggleLog = true;
-	bTestEquip = true;
 }
 
 void ARifleWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	MyPlayer->OnPlayerDestination.AddDynamic(this, &ARifleWeapon::SetupWeapon);
+
+	MyPlayer->OnStartShooting.AddDynamic(this, &ARifleWeapon::StartShooting);
+	MyPlayer->OnStopShooting.AddDynamic(this, &ARifleWeapon::StopShooting);
+
+	CurrentLevel = GetWorld();
 }
 
 void ARifleWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (MyPlayer)
-	{
-		/*if (Bullets < 0)
-		{
-			MyPlayer->bCanPlayerShoot = false;
-		}*/	
 
-		/*if ((PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
-		{
-			if (bToggleLog)
-			{
-				if (GEngine)
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Rifle"));
-				bToggleLog = false;
-			}
-
-			if (bTestEquip)
-			{
-				SetWeapon(this);
-				SetupWeapon();
-				bTestEquip = false;
-			}
-
-		}
-		else if (!(PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
-		{
-			if (bTestEquip)
-			{
-				SetupWeapon();
-				bTestEquip = false;
-			}
-		}*/
-
-		Shoot();
-	}
 }
 
 void ARifleWeapon::SetupWeapon()
 {
-	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	Super::SetupWeapon();
 
-	SkeletalMesh->SetSimulatePhysics(false);
-
-	if (MyPlayer || Enemy)
+	if (MyPlayer)
 	{
-		if ((PlayerWeapon == EPlayerWeapon::EPW_Rifle) && (MyPlayer->PlayerStatus == EPlayerStatus::EPS_Fight))
+		if (PlayerWeapon == EPlayerWeapon::EPW_Rifle)
 		{
-			SetWeapon(this);
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Player should equip the weapon"));
+
+			MyPlayer->SetEquippedWeapon(this);
 
 			const USkeletalMeshSocket* LeftHandSocket = MyPlayer->GetMesh()->GetSocketByName("L_palmSocket");
 			if (LeftHandSocket)
@@ -89,6 +58,8 @@ void ARifleWeapon::SetupWeapon()
 		}
 		else
 		{
+			Enemy->SetEnemyWeapon(this);
+
 			const USkeletalMeshSocket* LeftHandSocket = Enemy->GetMesh()->GetSocketByName("LeftHandSocket");
 			if (LeftHandSocket)
 			{
@@ -96,14 +67,79 @@ void ARifleWeapon::SetupWeapon()
 			}
 		}
 	}
+
+	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+
+	SkeletalMesh->SetSimulatePhysics(false);
+}
+
+void ARifleWeapon::StartShooting()
+{
+	Super::StartShooting();
+
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ARifleWeapon::Shoot, 0.3f, true, 0.0f);
+}
+
+void ARifleWeapon::StopShooting()
+{
+	Super::StopShooting();
+
+	GetWorldTimerManager().ClearTimer(TimerHandle);
 }
 
 void ARifleWeapon::Shoot()
 {
-	/*if (MyPlayer->bCanPlayerShoot && IsValid(SpawnBullet))
+	if (SpawnBullet)
 	{
-		PlayerCameraManager = MyPlayer->CameraManager;
+		if (Bullets != 0)
+		{
+			PlayerCameraManager = MyPlayer->CameraManager;
 
+			if (CurrentLevel)
+			{
+				//FTransform SpawnTransform = BulletSpawnTransform->GetComponentTransform();
+				FTransform SpawnTransform = GetActorTransform();
 
-	}*/
+				//ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBullet, SpawnTransform);
+
+				FHitResult HitResult;
+
+				FVector Start = PlayerCameraManager->GetCameraLocation();
+				FVector End = Start + (PlayerCameraManager->GetActorForwardVector() * BulletEndDistance);
+
+				FCollisionQueryParams QueryParams;
+				QueryParams.AddIgnoredActor(MyPlayer);
+
+				bool bLineTrace = CurrentLevel->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Camera, QueryParams);
+
+				DrawDebugLine(CurrentLevel, Start, End, HitResult.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 2.0f);
+
+				Bullets--;
+
+				if (HitResult.bBlockingHit && IsValid(HitResult.GetActor()))
+				{
+					UE_LOG(LogTemp, Log, TEXT("Trace hit actor: %s"), *HitResult.GetActor()->GetName());
+				}
+				else {
+					UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
+				}
+			}
+
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("SpawnBullet is valid"));
+		}
+		else
+		{
+			GetWorldTimerManager().ClearTimer(TimerHandle);
+		}
+		
+	}
+	else
+	{
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("SpawnBullet is invalid"));
+	}
+
+	
 }
