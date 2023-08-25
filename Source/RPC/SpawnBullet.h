@@ -18,11 +18,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = ProjectileMovement)
 	class UProjectileMovementComponent* ProjectileMovement;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Arrow)
+	class UArrowComponent* BulletForwardMovement;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Collision)
 	class UCapsuleComponent* BulletCollision;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = StaticMesh)
 	class UStaticMeshComponent* StaticMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = StaticMesh)
+	class UStaticMeshComponent* EmptyMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
 	class AMyPlayer* MyPlayer;
@@ -74,4 +80,6 @@ public:
 
 	UFUNCTION()
 		void DamageEnemy();
+
+	FORCEINLINE UProjectileMovementComponent* GetProjectileMovement() { return ProjectileMovement; }
 };

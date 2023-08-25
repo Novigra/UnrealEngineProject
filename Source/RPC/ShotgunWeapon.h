@@ -21,6 +21,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	AShotgunWeapon* Weapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Arrow)
+	class UArrowComponent* BulletDir1;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

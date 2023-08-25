@@ -10,6 +10,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -18,8 +19,14 @@ ASpawnBullet::ASpawnBullet()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	EmptyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EmptyMesh"));
+	EmptyMesh->SetupAttachment(GetRootComponent());
+
+	BulletForwardMovement = CreateDefaultSubobject<UArrowComponent>(TEXT("BulletForwardMovement"));
+	BulletForwardMovement->SetupAttachment(EmptyMesh);
+
 	BulletCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BulletCollision"));
-	BulletCollision->SetupAttachment(GetRootComponent());
+	BulletCollision->SetupAttachment(BulletForwardMovement);
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMesh->SetupAttachment(BulletCollision);
@@ -40,13 +47,25 @@ void ASpawnBullet::BeginPlay()
 
 	BulletCollision->OnComponentBeginOverlap.AddDynamic(this, &ASpawnBullet::OnOverlapBegin);
 	BulletCollision->OnComponentEndOverlap.AddDynamic(this, &ASpawnBullet::OnOverlapEnd);
+
+	if (IsValid(MyPlayer->GetEquippedWeapon()))
+	{
+		AWeapon* CurrentWeapon = MyPlayer->GetEquippedWeapon();
+		FRotator SpawnRotation = CurrentWeapon->BulletSpawnTransform->GetComponentRotation();
+
+		BulletForwardMovement->SetWorldRotation(SpawnRotation);
+
+		FRotator CheckRotation = BulletCollision->GetComponentRotation();
+		/*if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Bullet Rotation X: %f Y: %f Z: %f"), CheckRotation.Roll, CheckRotation.Pitch, CheckRotation.Yaw));*/
+	}
+	
 }
 
 // Called every frame
 void ASpawnBullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void ASpawnBullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

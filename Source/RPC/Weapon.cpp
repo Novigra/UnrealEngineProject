@@ -24,14 +24,14 @@ AWeapon::AWeapon()
 	BulletSpawnTransform = CreateDefaultSubobject<UArrowComponent>(TEXT("BulletSpawnTransform"));
 	BulletSpawnTransform->SetupAttachment(SkeletalMesh);
 
-	bMyTest = true;
+	bToggleDebugLine = false;
 	PlayerWeapon = EPlayerWeapon::EPW_NONE;
 
 	Damage = 1;
 	Bullets = 1;
 	Mag = 1;
-	FireRate = 1.0;
-	FireTime = 0.0;
+	FireRate = 1.0f;
+	BulletSpeed = 8000.0f;
 
 	bShoot = false;
 
@@ -55,6 +55,8 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CurrentSpawnerLocation = BulletSpawnTransform->GetRelativeLocation();
+
+	SeeRotation = BulletSpawnTransform->GetComponentRotation();
 	
 }
 

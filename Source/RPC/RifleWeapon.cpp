@@ -6,6 +6,9 @@
 #include "Enemy.h"
 #include "Components/ArrowComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 
 ARifleWeapon::ARifleWeapon()
@@ -15,7 +18,7 @@ ARifleWeapon::ARifleWeapon()
 	Damage = 25;
 	Bullets = 25;
 	Mag = 25;
-	FireRate = 10;
+	FireRate = 0.3f;
 }
 
 void ARifleWeapon::BeginPlay()
@@ -78,7 +81,7 @@ void ARifleWeapon::StartShooting()
 {
 	Super::StartShooting();
 
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &ARifleWeapon::Shoot, 0.3f, true, 0.0f);
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ARifleWeapon::Shoot, FireRate, true, 0.0f);
 }
 
 void ARifleWeapon::StopShooting()
@@ -90,7 +93,7 @@ void ARifleWeapon::StopShooting()
 
 void ARifleWeapon::Shoot()
 {
-	if (SpawnBullet)
+	if (SpawnBullet && PlayerWeapon == EPlayerWeapon::EPW_Rifle)
 	{
 		if (Bullets != 0)
 		{
@@ -98,11 +101,6 @@ void ARifleWeapon::Shoot()
 
 			if (CurrentLevel)
 			{
-				//FTransform SpawnTransform = BulletSpawnTransform->GetComponentTransform();
-				FTransform SpawnTransform = GetActorTransform();
-
-				//ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBullet, SpawnTransform);
-
 				FHitResult HitResult;
 
 				FVector Start = PlayerCameraManager->GetCameraLocation();
@@ -111,9 +109,19 @@ void ARifleWeapon::Shoot()
 				FCollisionQueryParams QueryParams;
 				QueryParams.AddIgnoredActor(MyPlayer);
 
-				bool bLineTrace = CurrentLevel->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Camera, QueryParams);
+				CurrentLevel->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Camera, QueryParams);
 
-				DrawDebugLine(CurrentLevel, Start, End, HitResult.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 2.0f);
+				if (bToggleDebugLine)
+					DrawDebugLine(CurrentLevel, Start, End, HitResult.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 2.0f);
+
+				FVector TraceEnd = HitResult.TraceEnd;
+				FVector BulletSpawnVector = BulletSpawnTransform->GetComponentLocation();
+				FVector BulletDirection = UKismetMathLibrary::GetDirectionUnitVector(BulletSpawnVector, TraceEnd);
+				FVector EndLocation = (BulletDirection * BulletSpeed);
+
+				ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBullet, BulletSpawnVector, FRotator(0.0f));
+
+				SpawnedBullet->GetProjectileMovement()->SetVelocityInLocalSpace(EndLocation);
 
 				Bullets--;
 
@@ -121,13 +129,11 @@ void ARifleWeapon::Shoot()
 				{
 					UE_LOG(LogTemp, Log, TEXT("Trace hit actor: %s"), *HitResult.GetActor()->GetName());
 				}
-				else {
+				else 
+				{
 					UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
 				}
 			}
-
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("SpawnBullet is valid"));
 		}
 		else
 		{
@@ -137,8 +143,7 @@ void ARifleWeapon::Shoot()
 	}
 	else
 	{
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("SpawnBullet is invalid"));
+		UE_LOG(LogTemp, Warning, TEXT("SpawnBullet is invalid"));
 	}
 
 	

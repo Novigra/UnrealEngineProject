@@ -41,9 +41,6 @@ public:
 	class UCapsuleComponent* WeaponCollision;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player)
-	bool bMyTest;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player)
 	EPlayerWeapon PlayerWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
@@ -58,11 +55,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	float FireRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
-	float FireTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	float BulletSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	TSubclassOf<ASpawnBullet> SpawnBullet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	TArray<TSubclassOf<ASpawnBullet>> SpawnBulletArr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	TArray<FRotator> BulletDirectionRotation;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
 	bool bShoot;
@@ -70,10 +73,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	float BulletEndDistance;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
+	bool bToggleDebugLine;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class APlayerCameraManager* PlayerCameraManager;
 
 	FVector CurrentSpawnerLocation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AMeshRotation)
+	FRotator SeeRotation;
 
 	UWorld* CurrentLevel;
 

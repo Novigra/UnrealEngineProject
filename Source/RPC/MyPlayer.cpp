@@ -142,7 +142,7 @@ void AMyPlayer::Tick(float DeltaTime)
 		if (!(bStopTimer))
 		{
 			MatchTimer += (MatchTimerRate * DeltaTime);
-			//UE_LOG(LogTemp, Warning, TEXT("Match Timer = %f"), MatchTimer);
+			//UE_LOG(LogTemp, Log, TEXT("Match Timer = %f"), MatchTimer);
 		}
 
 		if (MatchTimer > 6)
