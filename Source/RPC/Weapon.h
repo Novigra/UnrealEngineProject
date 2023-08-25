@@ -65,7 +65,7 @@ public:
 	TArray<TSubclassOf<ASpawnBullet>> SpawnBulletArr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = WeaponProperties)
-	TArray<FRotator> BulletDirectionRotation;
+	TArray<FRotator> BulletDirectionRotationArr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
 	bool bShoot;

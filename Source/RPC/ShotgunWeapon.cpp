@@ -16,6 +16,19 @@ AShotgunWeapon::AShotgunWeapon()
 	
 	BulletDir1 = CreateDefaultSubobject<UArrowComponent>(TEXT("BulletDirection1"));
 	BulletDir1->SetupAttachment(BulletSpawnTransform);
+	BulletDirArr.Add(BulletDir1);
+
+	BulletDir2 = CreateDefaultSubobject<UArrowComponent>(TEXT("BulletDirection2"));
+	BulletDir2->SetupAttachment(BulletSpawnTransform);
+	BulletDirArr.Add(BulletDir2);
+
+	BulletDir3 = CreateDefaultSubobject<UArrowComponent>(TEXT("BulletDirection3"));
+	BulletDir3->SetupAttachment(BulletSpawnTransform);
+	BulletDirArr.Add(BulletDir3);
+
+	BulletDir4 = CreateDefaultSubobject<UArrowComponent>(TEXT("BulletDirection4"));
+	BulletDir4->SetupAttachment(BulletSpawnTransform);
+	BulletDirArr.Add(BulletDir4);
 
 	Damage = 45;
 	Bullets = 6;
@@ -34,6 +47,13 @@ void AShotgunWeapon::BeginPlay()
 
 	CurrentLevel = GetWorld();
 	SpawnBulletArr.Init(SpawnBullet, 4);
+
+
+	for (int32 Index = 0; Index != BulletDirArr.Num(); ++Index)
+	{
+		FRotator CurrentBulletDirRotation = BulletDirArr[Index]->GetRelativeRotation();
+		BulletDirectionRotationArr.Add(CurrentBulletDirRotation);
+	}
 }
 
 // Called every frame
@@ -119,11 +139,11 @@ void AShotgunWeapon::Shoot()
 				FVector BulletDirection = UKismetMathLibrary::GetDirectionUnitVector(BulletSpawnVector, TraceEnd);
 				FVector EndLocation = (BulletDirection * BulletSpeed);
 
-				for (auto B = SpawnBulletArr.CreateIterator(); B; ++B)
+				for (int32 Index = 0; Index != SpawnBulletArr.Num(); ++Index)
 				{
 					UE_LOG(LogTemp, Log, TEXT("Bullets pew pew"));
 
-					ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBullet, BulletSpawnVector, FRotator(0.0f));
+					ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBulletArr[Index], BulletSpawnVector, BulletDirectionRotationArr[Index]);
 					SpawnedBullet->GetProjectileMovement()->SetVelocityInLocalSpace(EndLocation);
 
 					Bullets--;

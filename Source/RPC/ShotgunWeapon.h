@@ -21,8 +21,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = WeaponProperties)
 	AShotgunWeapon* Weapon;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Arrow)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
+	TArray<UArrowComponent*> BulletDirArr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
 	class UArrowComponent* BulletDir1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
+	class UArrowComponent* BulletDir2;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
+	class UArrowComponent* BulletDir3;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponProperties)
+	class UArrowComponent* BulletDir4;
 
 protected:
 	// Called when the game starts or when spawned
