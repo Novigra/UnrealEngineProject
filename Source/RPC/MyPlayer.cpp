@@ -8,10 +8,12 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "GenericPlatform/ICursor.h"
 #include "Enemy.h"
 #include "Placement.h"
 #include "Weapon.h"
+#include "Wall.h"
 #include "RifleWeapon.h"
 #include "ShotgunWeapon.h"
 #include "Kismet/GameplayStatics.h"
@@ -37,6 +39,10 @@ AMyPlayer::AMyPlayer()
 
 	StaticRootMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticRootMesh->SetupAttachment(GetRootComponent());
+
+	//Create Hand Collision
+	HandCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HandCollision"));
+	HandCollision->SetupAttachment(GetMesh(), "R_wristSocket");
 
 	// Attach Mesh to Camera Boom so it follows the camera Movement
 	GetMesh()->SetupAttachment(Camera);
@@ -77,6 +83,8 @@ AMyPlayer::AMyPlayer()
 	LoserSpeed = 400.0f;
 	DashSpeed = 1000.0f;
 
+	bCanPunch = false;
+
 	bCanDash = false;
 	bCanPlayerShoot = false;
 
@@ -87,6 +95,7 @@ AMyPlayer::AMyPlayer()
 	bTriggerZoomingOut = false;
 
 	bIsPressed = false;
+	bStartPunching = false;
 
 	PlayerDashDirection = FVector(0.0f);
 	PlayerDashSpeed = 1000.0f;
@@ -104,6 +113,7 @@ void AMyPlayer::BeginPlay()
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AMyPlayer::OnOverlapEnd);
+	HandCollision->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::PunchOnOverlapBegin);
 
 	LoadActors();
 
@@ -180,6 +190,7 @@ void AMyPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 
 			if (PlayerStatus == EPlayerStatus::EPS_Pending)
 			{
+				SetCharacterHealth();
 				SetCharacterSpeed();
 				SetCharacterDash();
 			}
@@ -192,6 +203,35 @@ void AMyPlayer::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 void AMyPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 
+}
+
+void AMyPlayer::PunchOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && bCanPunch)
+	{
+		if (!(OtherActor->IsA(AWeapon::StaticClass())))
+		{
+			if (OtherActor->IsA(AEnemy::StaticClass()))
+			{
+				Enemy = Cast<AEnemy>(OtherActor);
+				Enemy->bCanGetPushed = true;
+
+				if (GEngine)
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Super Punch : %s"), *OtherActor->GetName()));
+			}
+			else if (OtherActor->IsA(AWall::StaticClass()))
+			{
+				FVector WallLocation = OtherActor->GetActorLocation();
+				FVector PlayerLocation = GetActorLocation();
+
+				if (GEngine)
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Super Punch : %s"), *OtherActor->GetName()));
+				FVector PushBack = UKismetMathLibrary::GetDirectionUnitVector(WallLocation, PlayerLocation) * PushBackScale;
+				LaunchCharacter(PushBack, false, false);
+			}
+		}
+		bCanPunch = false;
+	}
 }
 
 // Called to bind functionality to input
@@ -211,6 +251,9 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMyPlayer::StopJumping);
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMyPlayer::Dash);
+
+	PlayerInputComponent->BindAction("Punch", IE_Pressed, this, &AMyPlayer::StartPunch);
+	PlayerInputComponent->BindAction("Punch", IE_Released, this, &AMyPlayer::StopPunch);
 
 	PlayerInputComponent->BindAction("PlayerRock", IE_Pressed, this, &AMyPlayer::PlayerRock);
 	PlayerInputComponent->BindAction("PlayerPaper", IE_Pressed, this, &AMyPlayer::PlayerPaper);
@@ -290,6 +333,18 @@ void AMyPlayer::StopJumping()
 	}
 }
 
+void AMyPlayer::SetCharacterHealth()
+{
+	if (PlayerResult == EPlayerResult::EPR_Winner)
+	{
+		Health = 100.0f;
+	}
+	else
+	{
+		Health = 50.0f;
+	}
+}
+
 void AMyPlayer::SetCharacterSpeed()
 {
 	if (PlayerResult == EPlayerResult::EPR_Winner)
@@ -323,6 +378,20 @@ void AMyPlayer::Dash()
 		PlayerDashDirection = GetCharacterMovement()->Velocity;
 		GetCharacterMovement()->AddImpulse(PlayerDashDirection * PlayerDashSpeed, true);
 	}
+}
+
+void AMyPlayer::StartPunch()
+{
+	if (PlayerResult == EPlayerResult::EPR_Winner)
+	{
+		bStartPunching = true;
+		bCanPunch = true;
+	}
+}
+
+void AMyPlayer::StopPunch()
+{
+	bStartPunching = false;
 }
 
 void AMyPlayer::PlayerRock()

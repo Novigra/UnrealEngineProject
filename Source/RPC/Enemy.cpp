@@ -7,6 +7,7 @@
 #include "MyPlayer.h"
 #include "SpawnBullet.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "EnemyPlacement.h"
 #include "RifleWeapon.h"
 #include "ShotgunWeapon.h"
@@ -43,6 +44,8 @@ AEnemy::AEnemy()
 
 	Health = 100.0f;
 	MaxHealth = 100.0f;
+
+	bCanGetPushed = false;
 }
 
 // Called when the game starts or when spawned
@@ -57,8 +60,6 @@ void AEnemy::BeginPlay()
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::EnemyOnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AEnemy::EnemyOnOverlapEnd);
-
-	LoadActors();
 }
 
 // Called every frame
@@ -157,6 +158,18 @@ void AEnemy::EnemyOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 			if (GEngine)
 				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Yup, That's Your Enemy"));
 			SpawnBullet->Destroy();
+		}
+
+		if (bCanGetPushed == true)
+		{
+			FVector PlayerLocation = MyPlayer->GetActorLocation();
+			FVector EnemyLocation = GetActorLocation();
+
+			FVector PushBack = UKismetMathLibrary::GetDirectionUnitVector(PlayerLocation, EnemyLocation) * MyPlayer->PushBackScale;
+			LaunchCharacter(PushBack, false, false);
+
+			PunchDamage();
+			bCanGetPushed = false;
 		}
 	}
 }
@@ -307,9 +320,7 @@ void AEnemy::SwitchModes()
 	bEnemyPushBack = true;
 }
 
-void AEnemy::LoadActors()
+void AEnemy::PunchDamage()
 {
-	
-
-	
+	Health -= 10.0f;
 }

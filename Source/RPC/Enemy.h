@@ -118,6 +118,7 @@ public:
 	bool bTie;
 	bool bCanChooseWinner;
 	bool bToggleEquip;
+	bool bCanGetPushed;
 
 	FTimerHandle PlayHandle;
 
@@ -137,7 +138,7 @@ public:
 	void NextRound();
 	void ChooseWinner();
 	void SwitchModes();
-	void LoadActors();
+	void PunchDamage();
 
 	UFUNCTION()
 	virtual void AgroOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

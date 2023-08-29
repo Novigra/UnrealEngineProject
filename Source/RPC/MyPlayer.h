@@ -66,6 +66,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnStopShooting OnStopShooting;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player)
+	class UCapsuleComponent* HandCollision;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class APlayerCameraManager* CameraManager;
 
@@ -147,6 +150,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
 	class ASpawnBullet* SpawnBullet;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Enemy)
+	class AEnemy* Enemy;
+
 	/*
 	* Combat related variables
 	*/
@@ -181,6 +187,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PlayerProperties")
 	bool bCanPlayerShoot;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerProperties")
+	bool bStartPunching;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerProperties")
+	FVector PushBackScale;
+
+	bool bCanPunch;
+
 	bool bToggleLog;
 	bool bToggleMeshLoc;
 
@@ -209,6 +223,9 @@ public:
 	UFUNCTION()
 	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION()
+	virtual void PunchOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -225,12 +242,18 @@ public:
 	void Jump();
 	void StopJumping();
 
+	// Set Health
+	void SetCharacterHealth();
+
 	// Set Character Speed
 	void SetCharacterSpeed();
 	void SetCharacterDash();
 	
 	// Movement Speed
 	void Dash();
+
+	void StartPunch();
+	void StopPunch();
 
 	void PlayerRock();
 	void PlayerPaper();
