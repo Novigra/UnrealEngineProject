@@ -218,3 +218,24 @@ That’s why I added pillars, the winner will be slow but can use the environmen
 ---
 
 There’s more that needs to be done, like AI and making the game more responsive and interesting, but I'm currently focusing on the building blocks. 😉
+---
+
+
+## Character Abilities
+
+---
+
+### Winner
+
+---
+
+The winner has the ability to punch the pillars. The idea behind this is that the winner moves slowly and the other player moves fast and dashes, so to balance movement, I added pillars so when the winner gets closer to them, they can punch the pillar, which will launch and push the player in the opposite direction of the force.
+
+![Pushing](https://github.com/Novigra/UnrealEngineProject/assets/59344266/cb5ce654-bd8f-43a4-b006-0fe52971640c)
+
+The winner can also punch the player.
+
+
+
+https://github.com/Novigra/UnrealEngineProject/assets/59344266/62c18f80-eb16-4d11-9c03-065fbf40bfb5
+
