@@ -34,6 +34,16 @@ enum class EEnemyResult : uint8
 	EER_NONE	UMETA(DisplayName = "NONE")
 };
 
+// Enemy life at the end of the two matches
+UENUM(BlueprintType)
+enum class EEnemyLife : uint8
+{
+	EEL_Alive	UMETA(DisplayName = "Alive"),
+	EEL_Dead	UMETA(DisplayName = "Dead"),
+
+	EEL_NONE	UMETA(DisplayName = "NONE")
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDestination); 
 
 UCLASS()
@@ -53,6 +63,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Enums)
 	EEnemyResult EnemyResult;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Enums)
+	EEnemyLife EnemyLife;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Match)
 	class AMyPlayer* MyPlayer;
@@ -109,11 +122,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	class AWeapon* EquippedWeapon;
 
+	/*
+	* Animation related
+	*/
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = TempTrans)
 	bool bTempA;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = TempTrans)
 	bool bTempB;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TempTrans)
+	bool bIsJumping;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TempTrans)
+	bool bIsPunching;
 
 	bool bTie;
 	bool bCanChooseWinner;

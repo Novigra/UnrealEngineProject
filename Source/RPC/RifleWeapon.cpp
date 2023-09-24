@@ -119,7 +119,9 @@ void ARifleWeapon::Shoot()
 				FVector BulletDirection = UKismetMathLibrary::GetDirectionUnitVector(BulletSpawnVector, TraceEnd);
 				FVector EndLocation = (BulletDirection * BulletSpeed);
 
-				ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBullet, BulletSpawnVector, FRotator(0.0f));
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.Owner = MyPlayer;
+				ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBullet, BulletSpawnVector, FRotator(0.0f), SpawnParams);
 
 				SpawnedBullet->GetProjectileMovement()->SetVelocityInLocalSpace(EndLocation);
 

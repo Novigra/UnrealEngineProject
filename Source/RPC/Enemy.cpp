@@ -11,6 +11,7 @@
 #include "EnemyPlacement.h"
 #include "RifleWeapon.h"
 #include "ShotgunWeapon.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -24,6 +25,7 @@ AEnemy::AEnemy()
 	EnemyStatus = EEnemyStatus::EES_Match;
 	EnemyChoice = EEnemyChoice::EEC_NONE;
 	EnemyResult = EEnemyResult::EER_NONE;
+	EnemyLife = EEnemyLife::EEL_NONE;
 
 	RandomNumber = 0;
 
@@ -70,7 +72,6 @@ void AEnemy::Tick(float DeltaTime)
 	
 	if (MyPlayer)
 	{
-		// DON'T FORGET TO CHANGE EPS TO EES
 		if (EnemyStatus == EEnemyStatus::EES_Match)
 		{
 			if (MyPlayer->MatchRound <= 3)
@@ -121,8 +122,6 @@ void AEnemy::Tick(float DeltaTime)
 			SetActorLocation(InterpLocation);
 		}
 	}
-
-	
 }
 
 // Called to bind functionality to input
@@ -157,7 +156,6 @@ void AEnemy::EnemyOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 		{
 			if (GEngine)
 				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Yup, That's Your Enemy"));
-			SpawnBullet->Destroy();
 		}
 
 		if (bCanGetPushed == true)

@@ -36,6 +36,15 @@ enum class EPlayerResult : uint8
 };
 
 UENUM(BlueprintType)
+enum class EPlayerLife : uint8
+{
+	EPL_Alive	UMETA(DisplayName = "Alive"),
+	EPL_Dead	UMETA(DisplayName = "Dead"),
+
+	EPL_NONE	UMETA(DisplayName = "NONE")
+};
+
+UENUM(BlueprintType)
 enum class EPlayerAnimTrans : uint8
 {
 	EPAT_Choosing	UMETA(DisplayName = "Choosing"),
@@ -86,6 +95,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Enums)
 	EPlayerResult PlayerResult;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Enums)
+	EPlayerLife PlayerLife;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Enums)
 	EPlayerAnimTrans PlayerAnimTrans;

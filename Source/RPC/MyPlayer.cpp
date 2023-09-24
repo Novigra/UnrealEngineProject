@@ -55,6 +55,7 @@ AMyPlayer::AMyPlayer()
 	PlayerStatus = EPlayerStatus::EPS_Match;
 	PlayerChoice = EPlayerChoice::EPC_NONE;
 	PlayerResult = EPlayerResult::EPR_NONE;
+	PlayerLife = EPlayerLife::EPL_NONE;
 	PlayerAnimTrans = EPlayerAnimTrans::EPAT_NONE;
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Player Initial Status Is Match"));
@@ -438,6 +439,8 @@ void AMyPlayer::StartShoot()
 	if (PlayerStatus == EPlayerStatus::EPS_Fight)
 	{
 		OnStartShooting.Broadcast();
+
+		bIsPressed = true;
 	}
 }
 
@@ -446,6 +449,8 @@ void AMyPlayer::StopShoot()
 	if (PlayerStatus == EPlayerStatus::EPS_Fight)
 	{
 		OnStopShooting.Broadcast();
+
+		bIsPressed = false;
 	}
 }
 

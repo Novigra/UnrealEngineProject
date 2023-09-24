@@ -25,7 +25,7 @@ ASpawnBullet::ASpawnBullet()
 	BulletForwardMovement = CreateDefaultSubobject<UArrowComponent>(TEXT("BulletForwardMovement"));
 	BulletForwardMovement->SetupAttachment(EmptyMesh);
 
-	BulletCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BulletCollision"));
+	BulletCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BulletPlayerCollision"));
 	BulletCollision->SetupAttachment(BulletForwardMovement);
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
@@ -42,24 +42,17 @@ void ASpawnBullet::BeginPlay()
 	Super::BeginPlay();
 
 	MyPlayer = UGameplayStatics::GetPlayerController(this, 0)->GetPawn<AMyPlayer>();
-	
-	//SetupPlacement();
 
 	BulletCollision->OnComponentBeginOverlap.AddDynamic(this, &ASpawnBullet::OnOverlapBegin);
-	BulletCollision->OnComponentEndOverlap.AddDynamic(this, &ASpawnBullet::OnOverlapEnd);
 
-	if (IsValid(MyPlayer->GetEquippedWeapon()))
+
+	if (IsValid(MyPlayer->GetEquippedWeapon()) && (GetOwner() == MyPlayer))
 	{
 		AWeapon* CurrentWeapon = MyPlayer->GetEquippedWeapon();
 		FRotator SpawnRotation = CurrentWeapon->BulletSpawnTransform->GetComponentRotation();
 
 		BulletForwardMovement->SetWorldRotation(SpawnRotation);
-
-		FRotator CheckRotation = BulletCollision->GetComponentRotation();
-		/*if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Bullet Rotation X: %f Y: %f Z: %f"), CheckRotation.Roll, CheckRotation.Pitch, CheckRotation.Yaw));*/
 	}
-	
 }
 
 // Called every frame
@@ -72,7 +65,7 @@ void ASpawnBullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 {
 	if (OtherActor)
 	{
-		if (OtherActor->IsA(AMyPlayer::StaticClass()))
+		if (OtherActor->IsA(AMyPlayer::StaticClass()) && (GetOwner() != MyPlayer))
 		{
 			AActor* FoundEnemy = UGameplayStatics::GetActorOfClass(this, AEnemy::StaticClass());
 			Enemy = Cast<AEnemy>(FoundEnemy);
@@ -86,30 +79,28 @@ void ASpawnBullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 				DamagePlayer();
 			}
 		}
-		else if(OtherActor->IsA(AEnemy::StaticClass()))
+		else if (OtherActor->IsA(AEnemy::StaticClass()))
 		{
 			//AActor* FoundEnemy = UGameplayStatics::GetActorOfClass(this, AEnemy::StaticClass());
 			Enemy = Cast<AEnemy>(OtherActor);
 
-			if (OtherComp == Enemy->GetCapsuleComponent())
+			if (GetOwner() != Enemy)
 			{
-				PlayerWeapon = MyPlayer->GetEquippedWeapon();
-
-				if (PlayerWeapon)
+				if (OtherComp == Enemy->GetCapsuleComponent())
 				{
-					if (GEngine)
-						GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Rifle Damage: %d"), PlayerWeapon->Damage));
+					PlayerWeapon = MyPlayer->GetEquippedWeapon();
 
-					DamageEnemy();
+					if (PlayerWeapon)
+					{
+						if (GEngine)
+							GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Rifle Damage: %d"), PlayerWeapon->Damage));
+
+						DamageEnemy();
+					}
 				}
 			}
 		}
 	}
-}
-
-void ASpawnBullet::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-
 }
 
 void ASpawnBullet::BindPlayerWeapon()
@@ -127,6 +118,7 @@ void ASpawnBullet::DamagePlayer()
 	MyPlayer->Health -= EnemyWeapon->Damage;
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Player Health: %d"), int32(MyPlayer->Health)));
+	Destroy();
 }
 
 void ASpawnBullet::DamageEnemy()
@@ -134,4 +126,6 @@ void ASpawnBullet::DamageEnemy()
 	Enemy->Health -= PlayerWeapon->Damage;
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Enemy Health: %d"), int32(Enemy->Health)));
+	Destroy();
 }
+

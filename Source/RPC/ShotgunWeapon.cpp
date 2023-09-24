@@ -141,9 +141,10 @@ void AShotgunWeapon::Shoot()
 
 				for (int32 Index = 0; Index != SpawnBulletArr.Num(); ++Index)
 				{
-					UE_LOG(LogTemp, Log, TEXT("Bullets pew pew"));
+					FActorSpawnParameters SpawnParams;
+					SpawnParams.Owner = MyPlayer;
+					ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBulletArr[Index], BulletSpawnVector, BulletDirectionRotationArr[Index], SpawnParams);
 
-					ASpawnBullet* SpawnedBullet = CurrentLevel->SpawnActor<ASpawnBullet>(SpawnBulletArr[Index], BulletSpawnVector, BulletDirectionRotationArr[Index]);
 					SpawnedBullet->GetProjectileMovement()->SetVelocityInLocalSpace(EndLocation);
 
 					Bullets--;
