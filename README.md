@@ -208,7 +208,8 @@ To make the game more fair, the winner moves slower than the other player, but e
 
 But the winner can use a super punch that can launch them, but it can also be super deadly against the other player if they get hit.
 
-![SuperPunch](https://github.com/Novigra/UnrealEngineProject/assets/59344266/a609746f-a8b4-4010-985b-75006ee36749)
+
+![Force](https://github.com/Novigra/UnrealEngineProject/assets/59344266/b14f33b5-1743-4baf-b20b-9cefa92f3782)
 
 
 That’s why I added pillars, the winner will be slow but can use the environment to their advantage.
@@ -238,4 +239,3 @@ The winner can also punch the player.
 
 
 https://github.com/Novigra/UnrealEngineProject/assets/59344266/62c18f80-eb16-4d11-9c03-065fbf40bfb5
-
