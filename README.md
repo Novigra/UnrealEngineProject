@@ -218,10 +218,6 @@ That’s why I added pillars, the winner will be slow but can use the environmen
 
 ---
 
-There’s more that needs to be done, like AI and making the game more responsive and interesting, but I'm currently focusing on the building blocks. 😉
----
-
-
 ## Character Abilities
 
 ---
