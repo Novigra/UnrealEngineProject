@@ -1,6 +1,6 @@
 # UnrealEngineProject
  
-## Rock, Paper, Scissors, Shoot! 🔫 (WIP)
+## Rock, Paper, Scissors, Shoot! 🔫
 
 
 # The Game Design
